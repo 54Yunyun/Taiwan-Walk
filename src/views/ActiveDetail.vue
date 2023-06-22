@@ -2,10 +2,19 @@
 import { ref } from 'vue';
 import { api } from '../axios/api.js';
 import { useRouter } from 'vue-router';
+import dayjs from 'dayjs';
 const router = useRouter();
 // 取得點選的縣市ID
 const id = router.currentRoute.value.params.Id;
+// 格式化日期
+const today = new Date();
+const formatDate = (date) => dayjs(date).format('YYYY/MM/DD');
+// 裝 API 回傳的資料
+const imgData = ref([]);
 const activeData = ref([]);
+const mapSrc = ref('');
+// const cityName = ref();
+const placeDataList = ref([]);
 // 取得相關縣市資料
 const searchActive = async () => {
   const cityUrl = `v2/Tourism/Activity?$filter=ActivityID%20eq%20'${id}'&$top=1&$format=JSON`;
@@ -14,10 +23,54 @@ const searchActive = async () => {
   const { data, status } = res;
   if (status == 200) {
     activeData.value = data;
+    if (data[0].Picture != null) {
+      imgData.value = [
+        {
+          url: data[0].Picture.PictureUrl1
+            ? data[0].Picture.PictureUrl1
+            : 'src/assets/img/nullPicture.png',
+          description: data[0].Picture.PictureDescription1
+            ? data[0].Picture.PictureDescription1
+            : '',
+        },
+        {
+          url: data[0].Picture.PictureUrl2
+            ? data[0].Picture.PictureUrl2
+            : 'src/assets/img/nullPicture.png',
+          description: data[0].Picture.PictureDescription2
+            ? data[0].Picture.PictureDescription2
+            : '',
+        },
+        {
+          url: data[0].Picture.PictureUrl3
+            ? data[0].Picture.PictureUrl3
+            : 'src/assets/img/nullPicture.png',
+          description: data[0].Picture.PictureDescription3
+            ? data[0].Picture.PictureDescription3
+            : '',
+        },
+      ];
+    }
+    if (data[0].Position != null) {
+      mapSrc.value = `https://maps.google.com.tw/maps?f=q&hl=zh-TW&geocode=&q=${data[0].Position.PositionLat},${data[0].Position.PositionLon}&z=16&output=embed&t=`;
+    }
   }
 };
-console.log('activeData', activeData);
+// 取得景點資料
+const fetchScenicSpotList = async () => {
+  for (let i = 1; i < 5; i++) {
+    const placeUrl = `v2/Tourism/Activity?$filter=ActivityID%20eq%20'${
+      id + i
+    }'&$top=1&$format=JSON`;
+    const res = await api.fetchList(placeUrl);
+    const { data, status } = res;
+    if (status == 200) {
+      console.log('data', data);
+    }
+  }
+};
 searchActive();
+fetchScenicSpotList();
 </script>
 <template>
   <div class="detail container p-5" v-for="active in activeData" :key="active">
@@ -36,12 +89,14 @@ searchActive();
             >節慶活動</router-Link
           >
         </li>
-        <li class="breadcrumb-item">{{ active.City }}</li>
+        <li class="breadcrumb-item">
+          {{ active.City }}
+        </li>
         <li class="breadcrumb-item">{{ active.ActivityName }}</li>
       </ol>
     </nav>
     <!-- 輪播區 -->
-    <div class="container">
+    <div class="carousel">
       <div
         id="carouselExampleCaptions"
         class="carousel slide"
@@ -49,60 +104,27 @@ searchActive();
       >
         <div class="carousel-indicators">
           <button
+            v-for="(item, index) in imgData"
+            :key="index"
             type="button"
-            data-bs-target="#carouselExampleCaptions"
-            data-bs-slide-to="0"
-            class="active"
-            aria-current="true"
-            aria-label="Slide 1"
-          ></button>
-          <button
-            type="button"
-            data-bs-target="#carouselExampleCaptions"
-            data-bs-slide-to="1"
-            aria-label="Slide 2"
-          ></button>
-          <button
-            type="button"
-            data-bs-target="#carouselExampleCaptions"
-            data-bs-slide-to="2"
-            aria-label="Slide 3"
+            :data-bs-target="'#carouselExampleCaptions'"
+            :data-bs-slide-to="index"
+            :class="{ active: index === 0 }"
+            :aria-current="index === 0 ? 'true' : 'false'"
+            :aria-label="`Slide ${index + 1}`"
           ></button>
         </div>
         <div class="carousel-inner carousel-fade">
-          <div class="carousel-item active">
+          <div
+            v-for="(item, index) in imgData"
+            :key="index"
+            :class="{ 'carousel-item': true, active: index === 0 }"
+          >
             <img
-              src="../assets/img/ScenicSpotPicture.png"
+              :src="item.url"
               class="d-block w-100"
-              alt="..."
+              :alt="`Slide ${index + 1}`"
             />
-            <div class="carousel-caption d-none d-md-block">
-              <h5>新北市</h5>
-              <p>不厭亭</p>
-            </div>
-          </div>
-
-          <div class="carousel-item">
-            <img
-              src="../assets/img/ScenicSpotPicture-2.png"
-              class="d-block w-100"
-              alt="..."
-            />
-            <div class="carousel-caption d-none d-md-block">
-              <h5>宜蘭縣</h5>
-              <p>羅東林業文化園區</p>
-            </div>
-          </div>
-          <div class="carousel-item">
-            <img
-              src="../assets/img/ScenicSpotPicture-3.png"
-              class="d-block w-100"
-              alt="..."
-            />
-            <div class="carousel-caption d-none d-md-block">
-              <h5>苗栗縣</h5>
-              <p>2021 苗栗龍系列活動</p>
-            </div>
           </div>
         </div>
         <button
@@ -126,7 +148,7 @@ searchActive();
       </div>
     </div>
     <!-- 活動資訊 -->
-    <div class="container active-wrap">
+    <div class="active-wrap">
       <div class="active-name">
         {{ active.ActivityName }}
       </div>
@@ -137,6 +159,102 @@ searchActive();
         <span class="active-class" v-if="active.Class2">
           # {{ active.Class2 }}</span
         >
+      </div>
+      <div class="active-description-wrap mt-4">
+        <div class="active-description-title">活動介紹：</div>
+        <span class="active-description-content">
+          {{ active.Description ? active.Description : '無' }}
+        </span>
+      </div>
+      <div class="row mt-4">
+        <div class="col-lg-6">
+          <div class="bg-light border-radius p-4 mb-5">
+            <div class="active-description-title">
+              活動時間：<span
+                >{{ formatDate(active.StartTime) }} -
+                {{ formatDate(active.EndTime) }}</span
+              >
+            </div>
+            <div class="active-description-title">
+              聯絡電話：<span>{{ active.Phone ? active.Phone : '無' }}</span>
+            </div>
+            <div class="active-description-title">
+              主辦單位：<span>{{
+                active.Organizer ? active.Organizer : '無'
+              }}</span>
+            </div>
+            <div class="active-description-title">
+              活動地點：<span>{{
+                active.Address
+                  ? active.Address
+                  : active.Location
+                  ? active.Location
+                  : '無'
+              }}</span>
+            </div>
+            <div class="active-description-title">
+              官方網站：<a :href="active.WebsiteUrl">
+                <span>{{
+                  active.WebsiteUrl ? active.WebsiteUrl : '無'
+                }}</span></a
+              >
+            </div>
+            <div class="active-description-title">
+              活動費用：<span>{{ active.Charge ? active.Charge : '無' }}</span>
+            </div>
+            <div class="active-description-title">
+              注意事項：<span>{{
+                active.Remarks ? active.Remarks : '無'
+              }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6 mb-5">
+          <iframe class="map border-radius" :src="mapSrc"> </iframe>
+        </div>
+        <div class="active-wrap row">
+          <div class="active-title-wrap d-flex justify-content-between">
+            <div class="active-title title-underline">附近景點</div>
+            <div class="active-more pointer">
+              <router-link :to="{ name: 'PlacesIndex' }">
+                查看更多景點<img
+                  src="../assets/icon/arrow-right16_R.png"
+                  class="arrow"
+                  alt=""
+                />
+              </router-link>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div
+            class="card col-lg-3 col-md-6"
+            v-for="data in placeDataList"
+            :key="data"
+            @click="goPlace(data)"
+          >
+            <div class="overflow-hidden places-card shadow">
+              <div
+                class="card-img"
+                :style="{
+                  'background-image':
+                    'url(' +
+                    (data.Picture.PictureUrl1
+                      ? data.Picture.PictureUrl1
+                      : 'src/assets/img/nullPicture.png') +
+                    ')',
+                }"
+              ></div>
+            </div>
+            <div class="card-body">
+              <div class="card-title">{{ data.ScenicSpotName }}</div>
+              <div class="text-muted">
+                <i class="bi bi-geo-alt"></i
+                ><span class="city">{{ data.Address }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

@@ -3,13 +3,30 @@
   overflow-x: hidden;
   font-family: Playfair Display, serif;
 }
+
 a {
   color: #646464;
   text-decoration: none;
 }
+
 .pointer {
   cursor: pointer;
 }
+.border-radius{
+  border-radius: calc(0.375rem - 1px);
+}
+
+/* 輪播圖大小 */
+.carousel-item {
+  height: min(500px, 40vw);
+}
+
+.carousel-item img {
+  object-fit: cover;
+  border-radius: calc(0.375rem - 1px);
+  height: 100%;
+}
+
 /* 搜尋按鈕區域 */
 .form-btn {
   display: flex;
@@ -23,7 +40,7 @@ a {
   border: 1px solid #bcbcbc;
   background-color: #7f977b;
   padding: 0.375rem 0.75rem;
-  color: #fff;
+  color: #ffffff;
 }
 .search-btn:hover {
   background-color: #6e7d60;
@@ -52,7 +69,7 @@ ul li {
 }
 
 /* 麵包屑 */
-.breadcrumb-item a{
+.breadcrumb-item a {
   color: #646464;
   transition: color .3s, text-shadow .3s;
 }
@@ -60,7 +77,6 @@ ul li {
   color: #6e7d60;
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
 }
-
 
 /* 探索景點、節慶活動、品嚐美食 共用 */
 .no-data-wrap {
@@ -74,7 +90,7 @@ ul li {
   display: flex;
   justify-content: center;
 }
-.no-data-circle{
+.no-data-circle {
   height: 100px;
   width: 100px;
   display: flex;
@@ -89,6 +105,8 @@ ul li {
   font-size: 18px;
   font-weight: bold;
 }
+
+/* 探索景點、節慶活動、品嚐美食 首頁 */
 .purpose-index .card-wrap {
   margin: 15px 0 15px 0;
 }
@@ -96,8 +114,11 @@ ul li {
   padding-top: 10px;
   padding-left: 0;
 }
-.purpose-index .active-location{
+.purpose-index .active-location {
   margin-bottom: 10px;
+}
+.purpose-index .active-location i{
+  margin-right: 5px;
 }
 .purpose-index .card-title {
   margin-top: 5px;
@@ -136,7 +157,7 @@ ul li {
 }
 .purpose-index .active-title {
   position: absolute;
-  color: #fff;
+  color: #ffffff;
   font-size: 22px;
   font-weight: 900;
   top: 50%;
@@ -145,17 +166,17 @@ ul li {
 }
 
 .active-class {
-  height: 20px;
-  width: 20px;
   font-size: 12px;
-  padding: 5px;
-  margin: 3px;
+  padding: 5px 8px;
+  margin-right: 10px;
   background-color: #ffffff;
   color: #bea363;
   border: 1px solid #bea363;
   border-radius: 5rem;
 }
-
+.active-class-icon{
+  margin-right: 5px;
+}
 .purpose-index .search-all {
   font-size: 22px;
 }
@@ -164,6 +185,29 @@ ul li {
   color: #bea363;
 }
 
+/* 探索景點、節慶活動、品嚐美食 內頁 */
+.active-wrap .active-class {
+  font-size: 16px;
+}
+.active-wrap  .active-name {
+  margin: 15px 0;
+}
+.active-description-title{
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.active-description-title span{
+  font-size: 18px;
+  font-weight: normal;
+}
+.active-description-content{
+  font-size: 18px;
+}
+.map{
+  width: 100%;
+  height: 100%;
+}
 /* 分頁 */
 .pagination {
   width: 100%;
@@ -182,7 +226,7 @@ ul li {
   background-color: #ffffff;
   border: 1px solid rgb(217, 217, 217);
   color: black;
-  transition: color .3s,background-color .3s
+  transition: color .3s, background-color .3s;
 }
 .paginate-buttons:hover {
   background-color: #7f977b;
@@ -199,7 +243,7 @@ ul li {
   color: #ffffff;
 }
 
-.active-name{
+.active-name {
   font-size: 28px;
   font-weight: 700;
   margin: 10px 0;

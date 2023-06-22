@@ -110,7 +110,7 @@ const actives = [
       <div class="col-lg-3 mb-3">
         <div class="select-wrap">
           <select class="form-select" v-model="selectedCity">
-            <option value="all" selected></option>
+            <option value="all" selected>請選擇縣市</option>
             <option
               v-for="city in cities"
               :value="city.value"
@@ -123,7 +123,7 @@ const actives = [
       </div>
       <div class="col-lg-3 mb-3">
         <select class="form-select">
-          <option value="all" selected>全部主題</option>
+          <option value="all" selected>請選擇主題</option>
           <option></option>
         </select>
       </div>

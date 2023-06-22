@@ -1,5 +1,5 @@
  const cities = [
-    { name: '全部縣市', value: 'all' },
+    { name: '全部縣市', value: '' },
     { name: '基隆市', value: 'Keelung' },
     { name: '台北市', value: 'Taipei' },
     { name: '新北市', value: 'NewTaipei' },

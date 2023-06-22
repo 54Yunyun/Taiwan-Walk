@@ -32,6 +32,11 @@ const router = createRouter({
           name: 'ActiveDetail',
           component: () => import('../views/ActiveDetail.vue')
         },
+        {       
+          path: '/placeDetail/:Id',
+          name: 'PlaceDetail',
+          component: () => import('../views/PlaceDetail.vue')
+        },
       ],
     },
   ],

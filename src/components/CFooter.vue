@@ -10,7 +10,7 @@
         </div>
         <div>Front-End：Yun</div>
         <div>
-          資料來源：
+          Source：
           <a href="https://tdx.transportdata.tw/"
             >運輸資料流通服務平臺 (TDX)</a
           >
@@ -39,5 +39,9 @@ a {
 }
 .footer-info a {
   color: #ffff;
+  transition: color .3s, color .3s;
+}
+.footer-info a:hover{
+  color: #e0da48
 }
 </style>

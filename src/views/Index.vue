@@ -1,15 +1,21 @@
 <script setup>
+import { ref,onBeforeMount } from 'vue';
 import dayjs from 'dayjs';
 import { api } from '../axios/api.js'
-import { ref,onBeforeMount,computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { cities } from '../assets/js/cities.js';
 const activityDataList = ref([]);
 const placeDataList = ref([]);
 const foodDataList = ref([]);
-
+const imgData = ref([]);
+const searchOption = ref('PlacesIndex');
+const selectedCity = ref(cities[0]);
+const keyword = ref('');
+const router = useRouter();
 // api url
 const activityUrl = 'v2/Tourism/Activity?%24top=30&%24format=JSON'
-const placeUrl = 'v2/Tourism/ScenicSpot?%24orderby=DescriptionDetail&%24top=30&%24skip=5&%24format=JSON'
-const foodUrl = 'v2/Tourism/Restaurant?%24orderby=RestaurantName&%24top=30&%24skip=5&%24format=JSON'
+const placeUrl = 'v2/Tourism/ScenicSpot?%24o&%24top=30&%24format=JSON'
+const foodUrl = 'v2/Tourism/Restaurant?%24&%24top=30&%24skip=13&%24format=JSON'
 
 // 格式化日期
 const today = new Date();
@@ -25,14 +31,50 @@ const fetchActivityList = async () => {
     .sort((a, b) => new Date(a.StartTime) - new Date(b.StartTime));
     activityDataList.value=sortedData.slice(0, 4);
   }
-  console.log('activityDataList',activityDataList);
 }
 // 取得景點資料
 const fetchScenicSpotList = async () => {
   const res = await api.fetchList(placeUrl);
   const {data,status} = res;
   if(status == 200) {
+   console.log('data',data);
     placeDataList.value=data.slice(0, 4);
+    if (data[0].Picture != null) {
+      imgData.value = [
+        {
+          url: data[0].Picture.PictureUrl1
+            ? data[0].Picture.PictureUrl1
+            : 'src/assets/img/nullPicture.png',
+          description: data[0].ScenicSpotName
+            ? data[0].ScenicSpotName
+            : '',
+        },
+        {
+          url: data[1].Picture.PictureUrl1
+            ? data[1].Picture.PictureUrl1
+            : 'src/assets/img/nullPicture.png',
+          description: data[1].ScenicSpotName
+            ? data[1].ScenicSpotName
+            : '',
+        },
+        {
+          url: data[2].Picture.PictureUrl1
+            ? data[2].Picture.PictureUrl1
+            : 'src/assets/img/nullPicture.png',
+          description: data[2].ScenicSpotName
+            ? data[2].ScenicSpotName
+            : '',
+        },
+        {
+          url: data[3].Picture.PictureUrl1
+            ? data[3].Picture.PictureUrl1
+            : 'src/assets/img/nullPicture.png',
+          description: data[3].ScenicSpotName
+            ? data[3].ScenicSpotName
+            : '',
+        },
+      ];
+    }
   }
   console.log('placeUrl',placeUrl);
 }
@@ -46,6 +88,29 @@ const fetchRestaurantList = async () => {
   }
   console.log('foodUrl',foodUrl);
 }
+
+// go to activity detail page
+const goActivity = (data) => {
+    const activityID = data.ActivityID; 
+    const url = `/activeDetail/${activityID}`;
+    router.push({ path: url });
+}
+// go to place detail page
+const goPlace = (data) => {
+  const placeID = data.ScenicSpotID; 
+  const url = `/placeDetail/${placeID}`;
+  router.push({ path: url });
+}
+// 搜尋 探索景點、節慶活動、品嚐美食
+const search = () => {
+  if (searchOption.value === 'PlacesIndex') {
+    router.push('/placesIndex');
+  } else if (searchOption.value === 'ActiveIndex') {
+    router.push('/activeIndex');
+  } else if (searchOption.value === 'FoodIndex') {
+    router.push('/foodIndex');
+  }
+};
 
 onBeforeMount(() => {
   fetchActivityList();
@@ -67,19 +132,23 @@ onBeforeMount(() => {
         </div>
       </div>
       <div class="search-select col-lg">
-        <select class="form-select" aria-label="Default select example">
-          <option selected>探索景點</option>
-          <option value="1">節慶活動</option>
-          <option value="2">品嚐美食</option>
+        <select class="form-select" aria-label="Default select example" v-model="searchOption">
+          <option value="PlacesIndex">探索景點</option>
+          <option value="ActiveIndex">節慶活動</option>
+          <option value="FoodIndex">品嚐美食</option>
         </select>
-        <input
-          id="alt"
-          class="keyword w-100"
-          type="text"
-          placeholder="你想去哪裡？請輸入關鍵字"
-        />
+        <select class="form-select" v-model="selectedCity">
+            <option value="all" selected>請選擇縣市</option>
+            <option
+              v-for="city in cities"
+              :value="city.value"
+              :key="city.value"
+            >
+              {{ city.name }}
+            </option>
+          </select>
         <div class="form-btn">
-          <button class="search-btn">
+          <button class="search-btn" @click="search">
             <span class="search-img">
               <img src="../assets/icon/Union.png" alt="" />
             </span>
@@ -89,94 +158,66 @@ onBeforeMount(() => {
       </div>
     </div>
   </div>
-  <!-- 輪播區 -->
-  <div class="container">
-    <div
-      id="carouselExampleCaptions"
-      class="carousel slide"
-      data-bs-ride="carousel"
-    >
-      <div class="carousel-indicators">
-        <button
-          type="button"
-          data-bs-target="#carouselExampleCaptions"
-          data-bs-slide-to="0"
-          class="active"
-          aria-current="true"
-          aria-label="Slide 1"
-        ></button>
-        <button
-          type="button"
-          data-bs-target="#carouselExampleCaptions"
-          data-bs-slide-to="1"
-          aria-label="Slide 2"
-        ></button>
-        <button
-          type="button"
-          data-bs-target="#carouselExampleCaptions"
-          data-bs-slide-to="2"
-          aria-label="Slide 3"
-        ></button>
-      </div>
-      <div class="carousel-inner carousel-fade">
-        <div class="carousel-item active">
-          <img
-            src="../assets/img/ScenicSpotPicture.png"
-            class="d-block w-100"
-            alt="..."
-          />
-          <div class="carousel-caption d-none d-md-block">
-            <h5>新北市</h5>
-            <p>不厭亭</p>
-          </div>
-        </div>
 
-        <div class="carousel-item">
-          <img
-            src="../assets/img/ScenicSpotPicture-2.png"
-            class="d-block w-100"
-            alt="..."
-          />
-          <div class="carousel-caption d-none d-md-block">
-            <h5>宜蘭縣</h5>
-            <p>羅東林業文化園區</p>
+  <div class="container">
+    <!-- 輪播區 -->
+    <div class="carousel">
+      <div
+        id="carouselExampleCaptions"
+        class="carousel slide"
+        data-bs-ride="carousel"
+      >
+        <div class="carousel-indicators">
+          <button
+            v-for="(item, index) in imgData"
+            :key="index"
+            type="button"
+            :data-bs-target="'#carouselExampleCaptions'"
+            :data-bs-slide-to="index"
+            :class="{ active: index === 0 }"
+            :aria-current="index === 0 ? 'true' : 'false'"
+            :aria-label="`Slide ${index + 1}`"
+          ></button>
+        </div>
+        <div class="carousel-inner carousel-fade align-items-center">
+          <div
+            v-for="(item, index) in imgData"
+            :key="index"
+            :class="{ 'carousel-item': true, active: index === 0 }"
+          >
+            <img
+              :src="item.url"
+              class="d-block w-100"
+              :alt="`Slide ${index + 1}`"
+            />
+            <div class="carousel-description d-none d-md-block position-absolute">
+            <p>{{ item.description }}</p>
+          </div>
           </div>
         </div>
-        <div class="carousel-item">
-          <img
-            src="../assets/img/ScenicSpotPicture-3.png"
-            class="d-block w-100"
-            alt="..."
-          />
-          <div class="carousel-caption d-none d-md-block">
-            <h5>苗栗縣</h5>
-            <p>2021 苗栗龍系列活動</p>
-          </div>
-        </div>
+        <button
+          class="carousel-control-prev"
+          type="button"
+          data-bs-target="#carouselExampleCaptions"
+          data-bs-slide="prev"
+        >
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button
+          class="carousel-control-next"
+          type="button"
+          data-bs-target="#carouselExampleCaptions"
+          data-bs-slide="next"
+        >
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
       </div>
-      <button
-        class="carousel-control-prev"
-        type="button"
-        data-bs-target="#carouselExampleCaptions"
-        data-bs-slide="prev"
-      >
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Previous</span>
-      </button>
-      <button
-        class="carousel-control-next"
-        type="button"
-        data-bs-target="#carouselExampleCaptions"
-        data-bs-slide="next"
-      >
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Next</span>
-      </button>
     </div>
-  </div>
 
   <!-- 近期活動 -->
-  <div class="container">
+
     <div class="active-wrap row">
       <div class="active-title-wrap d-flex">
         <div class="active-title title-underline">近期活動</div>
@@ -188,7 +229,7 @@ onBeforeMount(() => {
       </div>
     </div>
     <div class="row row-cols-1 row-cols-md-2 gy-3">
-      <div class="col-12 col-lg-6 mb-3 pointer" v-for="data in activityDataList" :key="data">
+      <div class="col-12 col-lg-6 mb-3 pointer" v-for="data in activityDataList" :key="data" @click="goActivity(data)">
         <div class="active-card card shadow">
           <div class="row g-0">
             <div class="overflow-hidden col-4">
@@ -231,7 +272,7 @@ onBeforeMount(() => {
       </div>
     </div>
     <div class="row">
-      <div class="card col-lg-3 col-md-6" v-for="data in placeDataList" :key="data">
+      <div class="card col-lg-3 col-md-6" v-for="data in placeDataList" :key="data" @click="goPlace(data)">
         <div class="overflow-hidden places-card shadow">
           <div class="card-img"
               :style="{ 'background-image': 'url(' + (data.Picture.PictureUrl1 ? data.Picture.PictureUrl1 : 'src/assets/img/nullPicture.png') + ')' }">
@@ -274,6 +315,14 @@ onBeforeMount(() => {
 </template>
 
 <style scoped>
+.carousel-description{
+  top:50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 30px;
+  font-weight: 700;
+  color: #ffffff;
+}
 .card{
   border: 0;
 }
@@ -316,7 +365,7 @@ onBeforeMount(() => {
 }
 .info:hover .arrow,
 .active-more:hover .arrow {
-  animation: jump 0.5s infinite;
+  animation: jump .5s infinite;
 }
 @keyframes jump {
   0% { transform: translateX(0); }

@@ -27,12 +27,12 @@ watchEffect(() => {
           <span></span>
           <ul id="menu">          
             <router-link :to="{ name: 'ActiveIndex' }"
-              ><li :class="{ current: currentPage === 'ActiveIndex' }">
+              ><li :class="{ current: currentPage === 'ActiveIndex' || currentPage === 'ActiveDetail'}">
                 節慶活動
               </li></router-link
             >
             <router-link :to="{ name: 'PlacesIndex' }"
-              ><li :class="{ current: currentPage === 'PlacesIndex' }">
+              ><li :class="{ current: currentPage === 'PlacesIndex' || currentPage === 'PlaceDetail'}">
                 探索景點
               </li></router-link
             >
@@ -142,7 +142,7 @@ nav #menu li.current {
   #menuToggle a {
     text-decoration: none;
     color: #232323;
-    transition: color 0.3s ease;
+    transition: color .3s ease;
   }
 
   #menuToggle a:hover {
@@ -159,7 +159,7 @@ nav #menu li.current {
     border-radius: 3px;
     z-index: 1;
     transform-origin: 4px 0px;
-    transition: transform 0.5s cubic-bezier(0.77, 0.2, 0.05, 1);
+    transition: transform .5s cubic-bezier(0.77, 0.2, 0.05, 1);
   }
 
   #menuToggle span:first-child {
@@ -198,7 +198,7 @@ nav #menu li.current {
     transform-origin: top right;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
     transform: translate(100%, 0%);
-    transition: transform 0.5s cubic-bezier(0.77, 0.2, 0.05, 1);
+    transition: transform .5s cubic-bezier(0.77, 0.2, 0.05, 1);
   }
 
   #menu li {
