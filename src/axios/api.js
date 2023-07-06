@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 // 登入資訊
-const ClientID = import.meta.env.VITE_CLIENT_ID;
-const ClientSecret = import.meta.env.VITE_CLIENT_SECRET;
+const { VITE_CLIENT_ID: ClientID, VITE_CLIENT_SECRET: ClientSecret } = import.meta.env;
+
 const tokenUrl =
   'https://tdx.transportdata.tw/auth/realms/TDXConnect/protocol/openid-connect/token';
 
@@ -21,6 +21,7 @@ const api = {
       const res = await axios.post(tokenUrl, data, {
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
       });
+      console.log('token',res.data);
       const accessToken = res.data;
       return {
         authorization: `Bearer ${accessToken.access_token}`,
@@ -32,7 +33,7 @@ const api = {
   async fetchList(url) {
     try {
       const res = await axios.get(`${basicPath}${url}`, {
-        headers: this.login(),
+        headers:this.login(),
       });
       return res;
     } catch (e) {

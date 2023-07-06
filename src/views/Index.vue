@@ -4,13 +4,13 @@ import dayjs from 'dayjs';
 import { api } from '../axios/api.js'
 import { useRouter } from 'vue-router';
 import { cities } from '../assets/js/cities.js';
+
 const activityDataList = ref([]);
 const placeDataList = ref([]);
 const foodDataList = ref([]);
 const imgData = ref([]);
-const searchOption = ref('PlacesIndex');
-const selectedCity = ref(cities[0]);
-const keyword = ref('');
+const selectedActive = ref("");
+const selectedCity = ref("");
 const router = useRouter();
 // api url
 const activityUrl = 'v2/Tourism/Activity?%24top=30&%24format=JSON'
@@ -103,11 +103,11 @@ const goPlace = (data) => {
 }
 // 搜尋 探索景點、節慶活動、品嚐美食
 const search = () => {
-  if (searchOption.value === 'PlacesIndex') {
+  if (selectedActive.value === 'PlacesIndex') {
     router.push('/placesIndex');
-  } else if (searchOption.value === 'ActiveIndex') {
+  } else if (selectedActive.value === 'ActiveIndex') {
     router.push('/activeIndex');
-  } else if (searchOption.value === 'FoodIndex') {
+  } else if (selectedActive.value === 'FoodIndex') {
     router.push('/foodIndex');
   }
 };
@@ -132,13 +132,8 @@ onBeforeMount(() => {
         </div>
       </div>
       <div class="search-select col-lg">
-        <select class="form-select" aria-label="Default select example" v-model="searchOption">
-          <option value="PlacesIndex">探索景點</option>
-          <option value="ActiveIndex">節慶活動</option>
-          <option value="FoodIndex">品嚐美食</option>
-        </select>
         <select class="form-select" v-model="selectedCity">
-            <option value="all" selected>請選擇縣市</option>
+            <option value="" selected disabled hidden>請選擇縣市</option>
             <option
               v-for="city in cities"
               :value="city.value"
@@ -147,6 +142,13 @@ onBeforeMount(() => {
               {{ city.name }}
             </option>
           </select>
+        <select class="form-select" aria-label="Default select example" v-model="selectedActive">
+          <option value="" selected disabled hidden>請選擇活動</option>
+          <option value="PlacesIndex">精選活動</option>
+          <option value="ActiveIndex">探索景點</option>
+          <option value="FoodIndex">品嚐美食</option>
+        </select>
+       
         <div class="form-btn">
           <button class="search-btn" @click="search">
             <span class="search-img">
@@ -340,11 +342,7 @@ onBeforeMount(() => {
   font-size: 40px;
   margin-bottom: 5%;
 }
-.title-underline {
-  line-height: 1.5;
-  border-bottom: 2px #e0da48 solid;
-  padding-bottom: 2px;
-}
+
 .title-info {
   padding-top: 10px;
   font-size: 16px;
@@ -363,15 +361,8 @@ onBeforeMount(() => {
   width: 100%;
   margin-bottom: 5%;
 }
-.info:hover .arrow,
-.active-more:hover .arrow {
-  animation: jump .5s infinite;
-}
-@keyframes jump {
-  0% { transform: translateX(0); }
-  50% { transform: translateX(3px); }
-  100% { transform: translateX(0); }
-}
+
+
 
 
 .keyword {
@@ -409,16 +400,8 @@ onBeforeMount(() => {
   align-items: center;
   padding-bottom: 3%;
 }
-.active-title {
-  font-size: 30px;
-}
-.active-more a {
-  color: #ff725e;
-  font-size: 16px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-}
+
+
 .active-card {
   height: 160px;
   border-radius: 12px;

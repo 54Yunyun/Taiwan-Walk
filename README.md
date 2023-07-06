@@ -6,7 +6,7 @@
 
 # 系統說明
 
-## Project setup
+### Project setup
 npm install
 
 ### Compiles and hot-reloads for development

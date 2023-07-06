@@ -28,7 +28,7 @@ watchEffect(() => {
           <ul id="menu">          
             <router-link :to="{ name: 'ActiveIndex' }"
               ><li :class="{ current: currentPage === 'ActiveIndex' || currentPage === 'ActiveDetail'}">
-                節慶活動
+                精選活動
               </li></router-link
             >
             <router-link :to="{ name: 'PlacesIndex' }"

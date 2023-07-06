@@ -18,7 +18,7 @@ const router = createRouter({
           component: () => import('../views/PlacesIndex.vue'),
         },
         {
-          path: '/activeIndex',
+          path: '/activeIndex/:city?/:active?',
           name: 'ActiveIndex',
           component: () => import('../views/ActiveIndex.vue'),
         },

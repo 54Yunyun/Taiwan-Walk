@@ -1,34 +1,40 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onBeforeMount } from 'vue';
 import { api } from '../axios/api.js';
 import { useRouter } from 'vue-router';
 import dayjs from 'dayjs';
 const router = useRouter();
 // 取得點選的縣市ID
-const id = router.currentRoute.value.params.Id;
+let id = router.currentRoute.value.params.Id;
 // 格式化日期
 const today = new Date();
 const formatDate = (date) => dayjs(date).format('YYYY/MM/DD');
+
 // 裝 API 回傳的資料
 const imgData = ref([]);
 const activeData = ref([]);
 const mapSrc = ref('');
-// const cityName = ref();
+let positionLat = ref('');
+let positionLon = ref('');
+const activeDataList = ref([]);
 const placeDataList = ref([]);
 // 取得相關縣市資料
 const searchActive = async () => {
   const cityUrl = `v2/Tourism/Activity?$filter=ActivityID%20eq%20'${id}'&$top=1&$format=JSON`;
   const res = await api.fetchOne(cityUrl);
-  console.log('res', res);
+  console.log('cityUrl', cityUrl);
   const { data, status } = res;
   if (status == 200) {
     activeData.value = data;
+    positionLat.value = data[0].Position.PositionLat;
+
+    positionLon.value = data[0].Position.PositionLon;
     if (data[0].Picture != null) {
       imgData.value = [
         {
           url: data[0].Picture.PictureUrl1
             ? data[0].Picture.PictureUrl1
-            : 'src/assets/img/nullPicture.png',
+            : '/src/assets/img/nullPicture.png',
           description: data[0].Picture.PictureDescription1
             ? data[0].Picture.PictureDescription1
             : '',
@@ -36,7 +42,7 @@ const searchActive = async () => {
         {
           url: data[0].Picture.PictureUrl2
             ? data[0].Picture.PictureUrl2
-            : 'src/assets/img/nullPicture.png',
+            : '/src/assets/img/nullPicture.png',
           description: data[0].Picture.PictureDescription2
             ? data[0].Picture.PictureDescription2
             : '',
@@ -44,7 +50,7 @@ const searchActive = async () => {
         {
           url: data[0].Picture.PictureUrl3
             ? data[0].Picture.PictureUrl3
-            : 'src/assets/img/nullPicture.png',
+            : '/src/assets/img/nullPicture.png',
           description: data[0].Picture.PictureDescription3
             ? data[0].Picture.PictureDescription3
             : '',
@@ -52,25 +58,50 @@ const searchActive = async () => {
       ];
     }
     if (data[0].Position != null) {
-      mapSrc.value = `https://maps.google.com.tw/maps?f=q&hl=zh-TW&geocode=&q=${data[0].Position.PositionLat},${data[0].Position.PositionLon}&z=16&output=embed&t=`;
+      mapSrc.value = `https://maps.google.com.tw/maps?f=q&hl=zh-TW&geocode=&q=${positionLat.value},${positionLon.value}&z=16&output=embed&t=`;
     }
   }
 };
-// 取得景點資料
-const fetchScenicSpotList = async () => {
-  for (let i = 1; i < 5; i++) {
-    const placeUrl = `v2/Tourism/Activity?$filter=ActivityID%20eq%20'${
-      id + i
-    }'&$top=1&$format=JSON`;
-    const res = await api.fetchList(placeUrl);
-    const { data, status } = res;
-    if (status == 200) {
-      console.log('data', data);
-    }
+
+// 取得附近活動
+const fetchNearbyActive = async () => {
+  const placeUrl = `v2/Tourism/Activity?$spatialFilter=nearby(Position, ${positionLat.value}, ${positionLon.value}, 2000)`;
+  console.log('placeUrl', placeUrl);
+  const res = await api.fetchList(placeUrl);
+  const { data, status } = res;
+  if (status == 200) {
+    console.log('data', data);
+    activeDataList.value = data.slice(0, 4);
   }
 };
-searchActive();
-fetchScenicSpotList();
+
+// 取得附近景點
+const fetchNearbyPlace = async () => {
+  const placeUrl = `v2/Tourism/ScenicSpot?$spatialFilter=nearby(Position, ${positionLat.value}, ${positionLon.value}, 2000)`;
+  console.log('placeUrl', placeUrl);
+  const res = await api.fetchList(placeUrl);
+  const { data, status } = res;
+  if (status == 200) {
+    console.log('data', data);
+    placeDataList.value = data.slice(0, 4);
+  }
+};
+
+// 取得點選的縣市ID
+const goActive = async (ActivityID) => {
+  console.log('id', ActivityID);
+  id = ActivityID;
+  const url = `/activeDetail/${ActivityID}`;
+  // 跳轉至對應 id 頁面
+  router.push(url);
+  await searchActive();
+};
+
+onBeforeMount(async () => {
+  await searchActive(); 
+  fetchNearbyActive(); 
+  fetchNearbyPlace();
+});
 </script>
 <template>
   <div class="detail container p-5" v-for="active in activeData" :key="active">
@@ -86,7 +117,7 @@ fetchScenicSpotList();
           <router-Link
             :to="{ name: 'ActiveIndex' }"
             class="text-decoration-none"
-            >節慶活動</router-Link
+            >精選活動</router-Link
           >
         </li>
         <li class="breadcrumb-item">
@@ -123,7 +154,7 @@ fetchScenicSpotList();
             <img
               :src="item.url"
               class="d-block w-100"
-              :alt="`Slide ${index + 1}`"
+              :alt="item.ActivityName"
             />
           </div>
         </div>
@@ -212,9 +243,56 @@ fetchScenicSpotList();
         <div class="col-lg-6 mb-5">
           <iframe class="map border-radius" :src="mapSrc"> </iframe>
         </div>
-        <div class="active-wrap row">
-          <div class="active-title-wrap d-flex justify-content-between">
-            <div class="active-title title-underline">附近景點</div>
+        <!-- 鄰近的活動 -->
+        <div class="active-wrap">
+          <div
+            class="active-title-wrap d-flex justify-content-between align-items-center mb-4"
+          >
+            <div class="active-title title-underline">鄰近的活動</div>
+            <div class="active-more pointer">
+              <router-link :to="{ name: 'ActiveIndex' }">
+                查看更多活動<img
+                  src="../assets/icon/arrow-right16_R.png"
+                  class="arrow"
+                  alt=""
+                />
+              </router-link>
+            </div>
+          </div>
+        </div>
+        <div
+          class="card col-lg-3 col-md-6"
+          v-for="data in activeDataList"
+          :key="data"
+          @click="goActive(data.ActivityID)"
+        >
+          <div class="overflow-hidden places-card shadow">
+            <div
+              class="card-img"
+              :style="{
+                'background-image':
+                  'url(' +
+                  (data.Picture.PictureUrl1
+                    ? data.Picture.PictureUrl1
+                    : '/src/assets/img/nullPicture.png') +
+                  ')',
+              }"
+            ></div>
+          </div>
+          <div class="card-body">
+            <div class="card-title">{{ data.ActivityName }}</div>
+            <div class="text-muted">
+              <i class="bi bi-geo-alt"></i
+              ><span class="city">{{ data.Address }}</span>
+            </div>
+          </div>
+        </div>
+        <!-- 鄰近的景點 -->
+        <div class="active-wrap">
+          <div
+            class="active-title-wrap d-flex justify-content-between align-items-center mb-4"
+          >
+            <div class="active-title title-underline">鄰近的景點</div>
             <div class="active-more pointer">
               <router-link :to="{ name: 'PlacesIndex' }">
                 查看更多景點<img
@@ -226,32 +304,30 @@ fetchScenicSpotList();
             </div>
           </div>
         </div>
-        <div class="row">
-          <div
-            class="card col-lg-3 col-md-6"
-            v-for="data in placeDataList"
-            :key="data"
-            @click="goPlace(data)"
-          >
-            <div class="overflow-hidden places-card shadow">
-              <div
-                class="card-img"
-                :style="{
-                  'background-image':
-                    'url(' +
-                    (data.Picture.PictureUrl1
-                      ? data.Picture.PictureUrl1
-                      : 'src/assets/img/nullPicture.png') +
-                    ')',
-                }"
-              ></div>
-            </div>
-            <div class="card-body">
-              <div class="card-title">{{ data.ScenicSpotName }}</div>
-              <div class="text-muted">
-                <i class="bi bi-geo-alt"></i
-                ><span class="city">{{ data.Address }}</span>
-              </div>
+        <div
+          class="card col-lg-3 col-md-6"
+          v-for="data in placeDataList"
+          :key="data"
+          @click="goActive(data.ScenicSpotID)"
+        >
+          <div class="overflow-hidden places-card shadow">
+            <div
+              class="card-img"
+              :style="{
+                'background-image':
+                  'url(' +
+                  (data.Picture.PictureUrl1
+                    ? data.Picture.PictureUrl1
+                    : '/src/assets/img/nullPicture.png') +
+                  ')',
+              }"
+            ></div>
+          </div>
+          <div class="card-body">
+            <div class="card-title">{{ data.ScenicSpotName }}</div>
+            <div class="text-muted">
+              <i class="bi bi-geo-alt"></i
+              ><span class="city">{{ data.City }}</span>
             </div>
           </div>
         </div>
@@ -259,3 +335,9 @@ fetchScenicSpotList();
     </div>
   </div>
 </template>
+<style scoped>
+.places-card {
+  /* width: 250px; */
+  height: 180px;
+}
+</style>

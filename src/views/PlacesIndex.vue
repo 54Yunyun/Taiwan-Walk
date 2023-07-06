@@ -107,7 +107,7 @@ const places = [
             >首頁</router-Link
           >
         </li>
-        <li class="breadcrumb-item">節慶活動</li>
+        <li class="breadcrumb-item">精選活動</li>
       </ol>
     </nav>
     <!-- 搜尋 -->
