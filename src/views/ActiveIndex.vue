@@ -1,15 +1,17 @@
 <script setup>
-import { ref,watch, computed } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { api } from '../axios/api.js';
 import dayjs from 'dayjs';
 import { cities } from '../assets/js/cities.js';
+import CLoading from '../components/CLoading.vue';
 
 const router = useRouter();
 const route = useRoute();
+
 // 格式化日期
 const formatDate = (date) => dayjs(date).format('YYYY/MM/DD');
-
+const loading = ref();
 const currentPage = ref(1);
 const citiesList = ref([]);
 const chineseCityName = ref();
@@ -19,11 +21,12 @@ let citiesCount = ref(0);
 const selectedCity = ref(route.params.city || '');
 const selectedActive = ref(route.params.active || '');
 let search = ref(false);
+
 const routeParams = {
-      city: selectedCity.value,
-      active: selectedActive.value,
-    };
-const onClickHandler = function (page) {
+  city: selectedCity.value,
+  class: selectedActive.value,
+};
+const onClickHandler = (page) => {
   currentPage.value = page;
 };
 
@@ -37,9 +40,11 @@ const visibleCities = computed(() => {
 });
 
 const selectSearch = async () => {
+  loading.value = true;
   // 檢查是否有選擇縣市及活動
   const isCitySelected = selectedCity.value !== undefined;
   const isActivitySelected = selectedActive.value !== undefined;
+  console.log('isCitySelected', selectedCity.value);
   // 如果兩者都選了，則進行縣市加活動的搜尋
   if (isCitySelected && isActivitySelected) {
     activeClass.value = selectedActive.value;
@@ -49,6 +54,7 @@ const selectSearch = async () => {
     const res = await api.fetchList(url);
     const { data, status } = res;
     if (status == 200) {
+      loading.value = false;
       search.value = true;
       citiesCount.value = data.length;
       citiesList.value = data;
@@ -56,6 +62,8 @@ const selectSearch = async () => {
         (city) => city.value === selectedCity.value
       );
       chineseCityName.value = matchedCity ? matchedCity.name : '';
+      routeParams.city = selectedCity.value;
+      routeParams.class = selectedActive.value;
       router.replace({ name: 'ActiveIndex', params: routeParams });
     }
   } else if (isCitySelected) {
@@ -64,12 +72,14 @@ const selectSearch = async () => {
     const res = await api.fetchList(url);
     const { data, status } = res;
     if (status == 200) {
+      loading.value = false;
       search.value = true;
       citiesCount.value = data.length;
       citiesList.value = data;
       const matchedCity = cities.find(
         (city) => city.value === selectedCity.value
       );
+      routeParams.city = selectedCity.value;
       chineseCityName.value = matchedCity ? matchedCity.name : '';
       router.replace({ name: 'ActiveIndex', params: routeParams });
     }
@@ -81,23 +91,16 @@ const selectSearch = async () => {
     const { data, status } = res;
     console.log('res', res.data);
     if (status == 200) {
+      loading.value = false;
       search.value = true;
       citiesCount.value = data.length;
       citiesList.value = data;
+      routeParams.class = selectedActive.value;
       router.replace({ name: 'ActiveIndex', params: routeParams });
     }
   }
 };
 
-// watch(
-//   () => router.currentRoute.value.params,
-//   (params) => {
-//     // 取得網址上的參數
-//     selectedCity.value = params.city || '';
-//     selectedActive.value = params.active || '';
-//     selectSearch();
-//   },
-// );
 
 // 取得點選的縣市ID
 const goActive = (ActivityID) => {
@@ -108,6 +111,15 @@ const goActive = (ActivityID) => {
   router.push({ path: url });
 };
 
+const goActiveClass = (ClassName) => {
+  const url = `v2/Tourism/Activity?$filter=Class1%20eq%20%27${ClassName}%27&$top=200&$format=JSON`;
+}
+onMounted(() => {
+  const city = route.params.city || '';
+  const className = route.params.class || '';
+
+  selectSearch(city, className);
+});
 // 活動分類
 const activesClass = [
   {
@@ -179,7 +191,7 @@ const activesClass = [
       </div>
       <div class="col-lg-3 mb-3">
         <select class="form-select" v-model="selectedActive">
-          <option value="" selected disabled hidden>請選擇活動</option>
+          <option value="" selected disabled hidden>請選擇分類</option>
           <option
             v-for="activeClass in activesClass"
             :value="activeClass.name"
@@ -201,7 +213,7 @@ const activesClass = [
     </div>
     <!-- 預設內容 -->
     <div v-if="!search">
-      <div class="index-title">熱門主題</div>
+      <div class="index-title">熱門分類</div>
       <div class="card-wrap row">
         <div
           class="card g-3 col-lg-3 col-md-6"
@@ -257,7 +269,6 @@ const activesClass = [
                     : 'src/assets/img/nullPicture.png'
                 "
                 :alt="active.ActivityName"
-                onerror="this.style.display='none'"
               />
             </div>
           </div>
@@ -298,4 +309,5 @@ const activesClass = [
       </div>
     </div>
   </div>
+  <CLoading v-if="loading"></CLoading>
 </template>

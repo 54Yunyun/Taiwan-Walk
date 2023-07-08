@@ -1,7 +1,7 @@
  const cities = [
     { name: '全部縣市', value: '' },
     { name: '基隆市', value: 'Keelung' },
-    { name: '台北市', value: 'Taipei' },
+    { name: '臺北市', value: 'Taipei' },
     { name: '新北市', value: 'NewTaipei' },
     { name: '桃園市', value: 'Taoyuan' },
     { name: '新竹縣', value: 'HsinchuCounty' },

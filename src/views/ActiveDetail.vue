@@ -2,6 +2,7 @@
 import { ref, onBeforeMount } from 'vue';
 import { api } from '../axios/api.js';
 import { useRouter } from 'vue-router';
+import { cities } from '../assets/js/cities.js';
 import dayjs from 'dayjs';
 const router = useRouter();
 // 取得點選的縣市ID
@@ -18,17 +19,22 @@ let positionLat = ref('');
 let positionLon = ref('');
 const activeDataList = ref([]);
 const placeDataList = ref([]);
+const goBackCity = ref();
+
 // 取得相關縣市資料
 const searchActive = async () => {
   const cityUrl = `v2/Tourism/Activity?$filter=ActivityID%20eq%20'${id}'&$top=1&$format=JSON`;
   const res = await api.fetchOne(cityUrl);
-  console.log('cityUrl', cityUrl);
   const { data, status } = res;
   if (status == 200) {
     activeData.value = data;
+    const matchedCity = cities.find(
+        (city) => city.name === data[0].City
+      );
+    goBackCity.value = matchedCity ? matchedCity.value : '';
     positionLat.value = data[0].Position.PositionLat;
-
     positionLon.value = data[0].Position.PositionLon;
+ 
     if (data[0].Picture != null) {
       imgData.value = [
         {
@@ -66,11 +72,9 @@ const searchActive = async () => {
 // 取得附近活動
 const fetchNearbyActive = async () => {
   const placeUrl = `v2/Tourism/Activity?$spatialFilter=nearby(Position, ${positionLat.value}, ${positionLon.value}, 2000)`;
-  console.log('placeUrl', placeUrl);
   const res = await api.fetchList(placeUrl);
   const { data, status } = res;
   if (status == 200) {
-    console.log('data', data);
     activeDataList.value = data.slice(0, 4);
   }
 };
@@ -78,18 +82,15 @@ const fetchNearbyActive = async () => {
 // 取得附近景點
 const fetchNearbyPlace = async () => {
   const placeUrl = `v2/Tourism/ScenicSpot?$spatialFilter=nearby(Position, ${positionLat.value}, ${positionLon.value}, 2000)`;
-  console.log('placeUrl', placeUrl);
   const res = await api.fetchList(placeUrl);
   const { data, status } = res;
   if (status == 200) {
-    console.log('data', data);
     placeDataList.value = data.slice(0, 4);
   }
 };
 
 // 取得點選的縣市ID
 const goActive = async (ActivityID) => {
-  console.log('id', ActivityID);
   id = ActivityID;
   const url = `/activeDetail/${ActivityID}`;
   // 跳轉至對應 id 頁面
@@ -98,8 +99,8 @@ const goActive = async (ActivityID) => {
 };
 
 onBeforeMount(async () => {
-  await searchActive(); 
-  fetchNearbyActive(); 
+  await searchActive();
+  fetchNearbyActive();
   fetchNearbyPlace();
 });
 </script>
@@ -121,7 +122,18 @@ onBeforeMount(async () => {
           >
         </li>
         <li class="breadcrumb-item">
-          {{ active.City }}
+          <router-Link
+            :to="{ name: 'ActiveIndex',  params: { city: goBackCity}}"
+            class="text-decoration-none"
+            > {{ active.City }}</router-Link
+          >
+        </li>
+        <li class="breadcrumb-item">
+          <router-Link
+            :to="{ name: 'ActiveIndex', params: { city: goBackCity, active: active.Class1 || active.Class2 || '' }}"
+            class="text-decoration-none"
+            > {{ active.Class1 ? active.Class1 : active.Class2 ? active.Class2 : "" }}</router-Link
+          >
         </li>
         <li class="breadcrumb-item">{{ active.ActivityName }}</li>
       </ol>

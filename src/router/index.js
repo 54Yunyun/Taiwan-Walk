@@ -13,12 +13,12 @@ const router = createRouter({
           component: () => import('../views/Index.vue'),
         },
         {
-          path: '/placesIndex',
+          path: '/placesIndex/:city?/:class?',
           name: 'PlacesIndex',
           component: () => import('../views/PlacesIndex.vue'),
         },
         {
-          path: '/activeIndex/:city?/:active?',
+          path: '/activeIndex/:city?/:class?',
           name: 'ActiveIndex',
           component: () => import('../views/ActiveIndex.vue'),
         },

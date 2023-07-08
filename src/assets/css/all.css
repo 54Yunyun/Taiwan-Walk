@@ -143,8 +143,9 @@ ul li {
   margin: 15px 0 15px 0;
 }
 .purpose-index .card-body {
-  padding-top: 10px;
-  padding-left: 0;
+  /* padding-top: 10px;
+  padding-left: 0; */
+  padding: 10px 0 10px 0;
 }
 .purpose-index .active-location {
   margin-bottom: 10px;

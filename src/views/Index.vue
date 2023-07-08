@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import { api } from '../axios/api.js'
 import { useRouter } from 'vue-router';
 import { cities } from '../assets/js/cities.js';
+import {useLoading} from 'vue-loading-overlay'
 
 const activityDataList = ref([]);
 const placeDataList = ref([]);

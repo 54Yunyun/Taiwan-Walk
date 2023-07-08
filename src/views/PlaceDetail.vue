@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref,onBeforeMount } from 'vue';
 import { api } from '../axios/api.js';
 import { useRouter } from 'vue-router';
 import dayjs from 'dayjs';
@@ -13,6 +13,11 @@ const formatDate = (date) => dayjs(date).format('YYYY/MM/DD');
 const imgData = ref([]);
 const placeData = ref([]);
 const mapSrc = ref('');
+let positionLat = ref('');
+let positionLon = ref('');
+const activeDataList = ref([]);
+const placeDataList = ref([]);
+const goBackCity = ref();
 // 取得相關縣市資料
 const searchPlace = async () => {
   const cityUrl = `v2/Tourism/ScenicSpot?$filter=ScenicSpotID%20eq%20'${id}'&$top=1&$format=JSON`;
@@ -21,6 +26,7 @@ const searchPlace = async () => {
   const { data, status } = res;
   if (status == 200) {
     placeData.value = data;
+    console.log('data[0]', data[0]);
     if (data[0].Picture != null) {
       imgData.value = [
         {
@@ -38,7 +44,31 @@ const searchPlace = async () => {
     }
   }
 };
-searchPlace();
+
+// 取得附近活動
+const fetchNearbyActive = async () => {
+  const placeUrl = `v2/Tourism/Activity?$spatialFilter=nearby(Position, ${positionLat.value}, ${positionLon.value}, 2000)`;
+  const res = await api.fetchList(placeUrl);
+  const { data, status } = res;
+  if (status == 200) {
+    activeDataList.value = data.slice(0, 4);
+  }
+};
+
+// 取得附近景點
+const fetchNearbyPlace = async () => {
+  const placeUrl = `v2/Tourism/ScenicSpot?$spatialFilter=nearby(Position, ${positionLat.value}, ${positionLon.value}, 2000)`;
+  const res = await api.fetchList(placeUrl);
+  const { data, status } = res;
+  if (status == 200) {
+    placeDataList.value = data.slice(0, 4);
+  }
+};
+onBeforeMount(async () => {
+  await searchPlace();
+  fetchNearbyActive();
+  fetchNearbyPlace();
+});
 </script>
 <template>
   <div class="detail container p-5" v-for="place in placeData" :key="place">
@@ -75,7 +105,7 @@ searchPlace();
             type="button"
             :data-bs-target="'#carouselExampleCaptions'"
             :data-bs-slide-to="index"
-            :class="{ place: index === 0 }"
+            :class="{ active: index === 0 }"
             :aria-current="index === 0 ? 'true' : 'false'"
             :aria-label="`Slide ${index + 1}`"
           ></button>
@@ -84,12 +114,12 @@ searchPlace();
           <div
             v-for="(item, index) in imgData"
             :key="index"
-            :class="{ 'carousel-item': true, place: index === 0 }"
+            :class="{ 'carousel-item': true, active: index === 0 }"
           >
             <img
               :src="item.url"
               class="d-block w-100"
-              :alt="`Slide ${index + 1}`"
+              :alt="item.ActivityName"
             />
           </div>
         </div>
@@ -133,8 +163,8 @@ searchPlace();
         </span>
       </div>
       <div class="row mt-4">
-        <div class="col-lg-6">
-          <div class="bg-light border-radius p-4">
+        <div class="col-lg-6 ">
+          <div class="bg-light border-radius p-4 mb-5">
             <div class="active-description-title">
               開放時間：<span
                 >{{ place.OpenTime }}</span
@@ -153,7 +183,7 @@ searchPlace();
               }}</span>
             </div>
             <div class="active-description-title">
-              官方網站： <a :href="place.WebsiteUrl">
+              官方網站：<a :href="place.WebsiteUrl">
                 <span>{{
                   place.WebsiteUrl ? place.WebsiteUrl : '無'
                 }}</span></a
@@ -171,8 +201,51 @@ searchPlace();
             </div>
           </div>
         </div>
-        <div class="col-lg-6">
+        <div class="col-lg-6 mb-5">
           <iframe class="map border-radius" :src="mapSrc"> </iframe>
+        </div>
+         <!-- 鄰近的景點 -->
+         <div class="active-wrap">
+          <div
+            class="active-title-wrap d-flex justify-content-between align-items-center mb-4"
+          >
+            <div class="active-title title-underline">鄰近的景點</div>
+            <div class="active-more pointer">
+              <router-link :to="{ name: 'PlacesIndex' }">
+                查看更多景點<img
+                  src="../assets/icon/arrow-right16_R.png"
+                  class="arrow"
+                  alt=""
+                />
+              </router-link>
+            </div>
+          </div>
+        </div>
+        <div
+          class="card col-lg-3 col-md-6"
+          v-for="data in placeDataList"
+          :key="data"        
+        >
+          <div class="overflow-hidden places-card shadow">
+            <div
+              class="card-img"
+              :style="{
+                'background-image':
+                  'url(' +
+                  (data.Picture.PictureUrl1
+                    ? data.Picture.PictureUrl1
+                    : '/src/assets/img/nullPicture.png') +
+                  ')',
+              }"
+            ></div>
+          </div>
+          <div class="card-body">
+            <div class="card-title">{{ data.ScenicSpotName }}</div>
+            <div class="text-muted">
+              <i class="bi bi-geo-alt"></i
+              ><span class="city">{{ data.City }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
