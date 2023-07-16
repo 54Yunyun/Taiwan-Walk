@@ -1,14 +1,14 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { api } from '../axios/api.js';
+import { api } from '../../api/api.js';
+import { cities } from '../../constants/cities.js';
+import { scenicSpotClass } from '../../constants/scenicSpotClass.js';
 import dayjs from 'dayjs';
-import { cities } from '../assets/js/cities.js';
-import CLoading from '../components/CLoading.vue';
 
 const router = useRouter();
 const route = useRoute();
-
+const mode = 'ScenicSpot';
 // 格式化日期
 const formatDate = (date) => dayjs(date).format('YYYY/MM/DD');
 const loading = ref();
@@ -16,17 +16,19 @@ const currentPage = ref(1);
 const citiesList = ref([]);
 const chineseCityName = ref();
 const activeClass = ref();
-let selectedId = ref();
-let citiesCount = ref(0);
 const selectedCity = ref(route.params.city || '');
 const selectedActive = ref(route.params.active || '');
+let selectedId = ref();
+let citiesCount = ref(0);
 let search = ref(false);
+let data = {};
 
 const routeParams = {
   city: selectedCity.value,
   class: selectedActive.value,
 };
-const onClickHandler = (page) => {
+
+const onClickHandler = function (page) {
   currentPage.value = page;
 };
 
@@ -39,120 +41,52 @@ const visibleCities = computed(() => {
   return citiesList.value.slice(start, end);
 });
 
-const selectSearch = async () => {
-  loading.value = true;
-  // 檢查是否有選擇縣市及活動
-  const isCitySelected = selectedCity.value !== undefined;
-  const isActivitySelected = selectedActive.value !== undefined;
-  console.log('isCitySelected', selectedCity.value);
-  // 如果兩者都選了，則進行縣市加活動的搜尋
-  if (isCitySelected && isActivitySelected) {
-    activeClass.value = selectedActive.value;
-    const url = `v2/Tourism/Activity/${selectedCity.value}?${selectedActive.value}%27&$top=200&$format=JSON
-    &$select=ActivityID,ActivityName,Address,City,Picture,Class1,Class2
-    &$filter=contains(Class1,'${selectedActive.value}') or contains(Class2,'${selectedActive.value}')`;
-    const res = await api.fetchList(url);
-    const { data, status } = res;
-    if (status == 200) {
-      loading.value = false;
-      search.value = true;
-      citiesCount.value = data.length;
-      citiesList.value = data;
-      const matchedCity = cities.find(
-        (city) => city.value === selectedCity.value
-      );
-      chineseCityName.value = matchedCity ? matchedCity.name : '';
-      routeParams.city = selectedCity.value;
-      routeParams.class = selectedActive.value;
-      router.replace({ name: 'ActiveIndex', params: routeParams });
-    }
-  } else if (isCitySelected) {
-    // 如果只選了縣市，則進行縣市搜尋
-    const url = `v2/Tourism/Activity/${selectedCity.value}?%24StartTime&%24format=JSON`;
-    const res = await api.fetchList(url);
-    const { data, status } = res;
-    if (status == 200) {
-      loading.value = false;
-      search.value = true;
-      citiesCount.value = data.length;
-      citiesList.value = data;
-      const matchedCity = cities.find(
-        (city) => city.value === selectedCity.value
-      );
-      routeParams.city = selectedCity.value;
-      chineseCityName.value = matchedCity ? matchedCity.name : '';
-      router.replace({ name: 'ActiveIndex', params: routeParams });
-    }
-  } else if (isActivitySelected) {
-    activeClass.value = selectedActive.value;
-    // 如果只選了活動，則進行活動搜尋
-    const url = `v2/Tourism/Activity?$filter=Class1%20eq%20%27${selectedActive.value}%27&$top=200&$format=JSON`;
-    const res = await api.fetchList(url);
-    const { data, status } = res;
-    console.log('res', res.data);
-    if (status == 200) {
-      loading.value = false;
-      search.value = true;
-      citiesCount.value = data.length;
-      citiesList.value = data;
-      routeParams.class = selectedActive.value;
-      router.replace({ name: 'ActiveIndex', params: routeParams });
-    }
-  }
-};
-
-
 // 取得點選的縣市ID
-const goActive = (ActivityID) => {
-  selectedId.value = ActivityID;
-  console.log('id', ActivityID);
-  const url = `/activeDetail/${selectedId.value}`;
+const handleCardClick = (ScenicSpotID) => {
+  selectedId.value = ScenicSpotID;
+  const url = `/scenicSpotDetail/${selectedId.value}`;
   // 跳轉至對應 id 頁面
   router.push({ path: url });
 };
 
-const goActiveClass = (ClassName) => {
-  const url = `v2/Tourism/Activity?$filter=Class1%20eq%20%27${ClassName}%27&$top=200&$format=JSON`;
-}
+
+const selectSearch = async () => {
+  // 檢查是否有選擇縣市及活動
+  const isCitySelected = selectedCity.value !== '';
+  const isActivitySelected = selectedActive.value !== '';
+  // 如果兩者都選了，則進行縣市加活動的搜尋
+  if (isCitySelected && isActivitySelected) {
+    activeClass.value = selectedActive.value;
+    data = await api.fetchCityClassList(
+      mode,
+      `${selectedCity.value}`,
+      `${selectedActive.value}`
+    );
+  } else if (isCitySelected) {
+    // 如果只選了縣市，則進行縣市搜尋
+    data = await api.fetchCityClassList(mode, `${selectedCity.value}`, '');
+  } else if (isActivitySelected) {
+    activeClass.value = selectedActive.value;
+    // 如果只選了活動，則進行活動搜尋
+    data = await api.fetchCityClassList(mode, '', `${selectedActive.value}`);
+  }
+  if (data.length >= 0) {
+    search.value = true;
+  }
+
+  citiesCount.value = data.length;
+  citiesList.value = data;
+  const matchedCity = cities.find((city) => city.value === selectedCity.value);
+  chineseCityName.value = matchedCity ? matchedCity.name : '';
+  routeParams.city = selectedCity.value;
+  routeParams.class = selectedActive.value;
+  router.replace({ name: 'ScenicSpotIndex', params: routeParams });
+};
 onMounted(() => {
   const city = route.params.city || '';
   const className = route.params.class || '';
-
-  selectSearch(city, className);
+  selectSearch();
 });
-// 活動分類
-const activesClass = [
-  {
-    name: '節慶活動',
-    imgUrl: 'src/assets/img/active_1.jpeg',
-    value: '節慶活動',
-  },
-  {
-    name: '自行車活動',
-    imgUrl: 'src/assets/img/active_2.jpeg',
-    value: '自行車活動',
-  },
-  {
-    name: '遊憩活動',
-    imgUrl: 'src/assets/img/active_3.jpeg',
-    value: '遊憩活動',
-  },
-  {
-    name: '產業文化',
-    imgUrl: 'src/assets/img/active_4.jpeg',
-    value: '產業文化活動',
-  },
-  {
-    name: '年度活動',
-    imgUrl: 'src/assets/img/active_5.jpeg',
-    value: '年度活動',
-  },
-  {
-    name: '四季活動',
-    imgUrl: 'src/assets/img/active_6.jpeg',
-    value: '四季活動',
-  },
-];
 </script>
 <template>
   <div class="purpose-index container p-5">
@@ -164,13 +98,7 @@ const activesClass = [
             >首頁</router-Link
           >
         </li>
-        <li class="breadcrumb-item">
-          <router-Link
-            :to="{ name: 'ActiveIndex' }"
-            class="text-decoration-none"
-            >精選活動</router-Link
-          >
-        </li>
+        <li class="breadcrumb-item">探索景點</li>
       </ol>
     </nav>
     <!-- 搜尋 -->
@@ -193,11 +121,11 @@ const activesClass = [
         <select class="form-select" v-model="selectedActive">
           <option value="" selected disabled hidden>請選擇分類</option>
           <option
-            v-for="activeClass in activesClass"
-            :value="activeClass.name"
-            :key="activeClass.name"
+            v-for="placeClass in scenicSpotClass"
+            :value="placeClass.name"
+            :key="placeClass.name"
           >
-            {{ activeClass.name }}
+            {{ placeClass.name }}
           </option>
         </select>
       </div>
@@ -205,7 +133,7 @@ const activesClass = [
       <div class="form-btn col-lg-2 mb-3">
         <button class="search-btn" @click="selectSearch">
           <span class="search-img">
-            <img src="../assets/icon/Union.png" alt="" />
+            <img src="../../assets/icon/Union.png" alt="" />
           </span>
           搜尋
         </button>
@@ -217,13 +145,13 @@ const activesClass = [
       <div class="card-wrap row">
         <div
           class="card g-3 col-lg-3 col-md-6"
-          v-for="activeClass in activesClass"
-          :key="activeClass.name"
+          v-for="active in scenicSpotClass"
+          :key="active.name"
         >
           <div class="card-img">
-            <img :src="activeClass.imgUrl" :alt="activeClass.name" />
+            <img :src="active.imgUrl" :alt="active.name" />
           </div>
-          <span class="active-title">{{ activeClass.name }}</span>
+          <span class="active-title">{{ active.name }}</span>
         </div>
       </div>
     </div>
@@ -254,30 +182,20 @@ const activesClass = [
           class="card g-3 col-lg-3 col-md-6"
           v-for="(active, index) in visibleCities"
           :key="index"
-          @click="goActive(active.ActivityID)"
+          @click="handleCardClick(active.ScenicSpotID)"
         >
           <div class="overflow-hidden places-card shadow">
             <div class="card-img search-card-img">
               <img
                 :src="
                   active.Picture.PictureUrl1
-                    ? active.Picture.PictureUrl1
-                    : active.Picture.PictureUrl2
-                    ? active.Picture.PictureUrl2
-                    : active.Picture.PictureUrl3
-                    ? active.Picture.PictureUrl3
-                    : 'src/assets/img/nullPicture.png'
                 "
                 :alt="active.ActivityName"
               />
             </div>
           </div>
           <div class="card-body">
-            <div class="card-date">
-              {{ formatDate(active.StartTime) }} -
-              {{ formatDate(active.EndTime) }}
-            </div>
-            <div class="card-title">{{ active.ActivityName }}</div>
+            <div class="card-title">{{ active.ScenicSpotName }}</div>
             <div class="text-muted">
               <div class="active-location">
                 <i class="bi bi-geo-alt"></i
@@ -288,11 +206,11 @@ const activesClass = [
                 v-if="active.Class1 || active.Class2"
                 ><i class="bi bi-tag"></i
               ></span>
-              <span class="active-class" v-if="active.Class1">
-                # {{ active.Class1 }}</span
+              <span class="active-class" v-if="active.Class1"
+                ># {{ active.Class1 }}</span
               >
-              <span class="active-class" v-if="active.Class2">
-                # {{ active.Class2 }}</span
+              <span class="active-class" v-if="active.Class2"
+                ># {{ active.Class2 }}</span
               >
             </div>
           </div>
@@ -309,5 +227,4 @@ const activesClass = [
       </div>
     </div>
   </div>
-  <CLoading v-if="loading"></CLoading>
 </template>

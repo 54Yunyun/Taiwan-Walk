@@ -1,8 +1,8 @@
 <script setup>
-import { ref, onBeforeMount } from 'vue';
-import { api } from '../axios/api.js';
+import { ref, onMounted } from 'vue';
+import { api } from '../../api/api.js';
 import { useRouter } from 'vue-router';
-import { cities } from '../assets/js/cities.js';
+import { cities } from '../../constants/cities.js';
 import dayjs from 'dayjs';
 const router = useRouter();
 // 取得點選的縣市ID
@@ -17,76 +17,79 @@ const activeData = ref([]);
 const mapSrc = ref('');
 let positionLat = ref('');
 let positionLon = ref('');
-const activeDataList = ref([]);
-const placeDataList = ref([]);
+const nearbyActivity = ref([]);
+const nearbyScenicSpot = ref([]);
+const nearbyRestaurant = ref([]);
 const goBackCity = ref();
+const mode = 'Activity';
 
 // 取得相關縣市資料
-const searchActive = async () => {
-  const cityUrl = `v2/Tourism/Activity?$filter=ActivityID%20eq%20'${id}'&$top=1&$format=JSON`;
-  const res = await api.fetchOne(cityUrl);
-  const { data, status } = res;
-  if (status == 200) {
-    activeData.value = data;
-    const matchedCity = cities.find(
-        (city) => city.name === data[0].City
-      );
-    goBackCity.value = matchedCity ? matchedCity.value : '';
-    positionLat.value = data[0].Position.PositionLat;
-    positionLon.value = data[0].Position.PositionLon;
- 
-    if (data[0].Picture != null) {
-      imgData.value = [
-        {
-          url: data[0].Picture.PictureUrl1
-            ? data[0].Picture.PictureUrl1
-            : '/src/assets/img/nullPicture.png',
-          description: data[0].Picture.PictureDescription1
-            ? data[0].Picture.PictureDescription1
-            : '',
-        },
-        {
-          url: data[0].Picture.PictureUrl2
-            ? data[0].Picture.PictureUrl2
-            : '/src/assets/img/nullPicture.png',
-          description: data[0].Picture.PictureDescription2
-            ? data[0].Picture.PictureDescription2
-            : '',
-        },
-        {
-          url: data[0].Picture.PictureUrl3
-            ? data[0].Picture.PictureUrl3
-            : '/src/assets/img/nullPicture.png',
-          description: data[0].Picture.PictureDescription3
-            ? data[0].Picture.PictureDescription3
-            : '',
-        },
-      ];
-    }
-    if (data[0].Position != null) {
-      mapSrc.value = `https://maps.google.com.tw/maps?f=q&hl=zh-TW&geocode=&q=${positionLat.value},${positionLon.value}&z=16&output=embed&t=`;
-    }
-  }
+const fetchOne = async () => {
+  const data = await api.fetchOne(mode, id);
+  activeData.value = data;
+  const matchedCity = cities.find((city) => city.name === data[0].City);
+  goBackCity.value = matchedCity ? matchedCity.value : '';
+  console.log(goBackCity);
+  positionLat.value = data[0].Position.PositionLat;
+  positionLon.value = data[0].Position.PositionLon;
+  mapSrc.value = `https://maps.google.com.tw/maps?f=q&hl=zh-TW&geocode=&q=${positionLat.value},${positionLon.value}&z=16&output=embed&t=`;
+  imgData.value = [
+    {
+      url: data[0].Picture.PictureUrl1
+        ? data[0].Picture.PictureUrl1
+        : '/src/assets/img/nullPicture.png',
+      description: data[0].Picture.PictureDescription1
+        ? data[0].Picture.PictureDescription1
+        : '',
+    },
+    {
+      url: data[0].Picture.PictureUrl2
+        ? data[0].Picture.PictureUrl2
+        : '/src/assets/img/nullPicture.png',
+      description: data[0].Picture.PictureDescription2
+        ? data[0].Picture.PictureDescription2
+        : '',
+    },
+    {
+      url: data[0].Picture.PictureUrl3
+        ? data[0].Picture.PictureUrl3
+        : '/src/assets/img/nullPicture.png',
+      description: data[0].Picture.PictureDescription3
+        ? data[0].Picture.PictureDescription3
+        : '',
+    },
+  ];
 };
 
 // 取得附近活動
 const fetchNearbyActive = async () => {
-  const placeUrl = `v2/Tourism/Activity?$spatialFilter=nearby(Position, ${positionLat.value}, ${positionLon.value}, 2000)`;
-  const res = await api.fetchList(placeUrl);
-  const { data, status } = res;
-  if (status == 200) {
-    activeDataList.value = data.slice(0, 4);
-  }
+  const data = await api.fetchNearbyList(
+    mode,
+    positionLat.value,
+    positionLon.value
+  );
+  nearbyActivity.value = data;
 };
 
 // 取得附近景點
-const fetchNearbyPlace = async () => {
-  const placeUrl = `v2/Tourism/ScenicSpot?$spatialFilter=nearby(Position, ${positionLat.value}, ${positionLon.value}, 2000)`;
-  const res = await api.fetchList(placeUrl);
-  const { data, status } = res;
-  if (status == 200) {
-    placeDataList.value = data.slice(0, 4);
-  }
+const fetchNearbyScenicSpot = async () => {
+  const data = await api.fetchNearbyList(
+    'ScenicSpot',
+    positionLat.value,
+    positionLon.value
+  );
+  console.log('fetchNearbyScenicSpot',data);
+  nearbyScenicSpot.value = data;
+};
+
+// 取得附近美食
+const fetchNearbyRestaurant= async () => {
+  const data = await api.fetchNearbyList(
+    'Restaurant',
+    positionLat.value,
+    positionLon.value
+  );
+  nearbyRestaurant.value = data;
 };
 
 // 取得點選的縣市ID
@@ -97,11 +100,18 @@ const goActive = async (ActivityID) => {
   router.push(url);
   await searchActive();
 };
-
-onBeforeMount(async () => {
-  await searchActive();
-  fetchNearbyActive();
-  fetchNearbyPlace();
+const goPlace = async (ScenicSpotID) => {
+  id = ScenicSpotID;
+  const url = `/scenicSpotDetail/${ScenicSpotID}`;
+  // 跳轉至對應 id 頁面
+  router.push(url);
+  await fetchNearbyPlace();
+};
+onMounted(async () => {
+  await fetchOne();
+  // await fetchNearbyActive();
+  // await fetchNearbyScenicSpot();
+  // await fetchNearbyRestaurant();
 });
 </script>
 <template>
@@ -123,16 +133,26 @@ onBeforeMount(async () => {
         </li>
         <li class="breadcrumb-item">
           <router-Link
-            :to="{ name: 'ActiveIndex',  params: { city: goBackCity}}"
+            :to="{ name: 'ActiveIndex', params: { city: goBackCity } }"
             class="text-decoration-none"
-            > {{ active.City }}</router-Link
+          >
+            {{ active.City }}</router-Link
           >
         </li>
         <li class="breadcrumb-item">
           <router-Link
-            :to="{ name: 'ActiveIndex', params: { city: goBackCity, active: active.Class1 || active.Class2 || '' }}"
+            :to="{
+              name: 'ActiveIndex',
+              params: {
+                city: goBackCity,
+                class: active.Class1 || active.Class2 || '',
+              },
+            }"
             class="text-decoration-none"
-            > {{ active.Class1 ? active.Class1 : active.Class2 ? active.Class2 : "" }}</router-Link
+          >
+            {{
+              active.Class1 ? active.Class1 : active.Class2 ? active.Class2 : ''
+            }}</router-Link
           >
         </li>
         <li class="breadcrumb-item">{{ active.ActivityName }}</li>
@@ -264,7 +284,7 @@ onBeforeMount(async () => {
             <div class="active-more pointer">
               <router-link :to="{ name: 'ActiveIndex' }">
                 查看更多活動<img
-                  src="../assets/icon/arrow-right16_R.png"
+                  src="../../assets/icon/arrow-right16_R.png"
                   class="arrow"
                   alt=""
                 />
@@ -274,7 +294,7 @@ onBeforeMount(async () => {
         </div>
         <div
           class="card col-lg-3 col-md-6"
-          v-for="data in activeDataList"
+          v-for="data in nearbyActivity"
           :key="data"
           @click="goActive(data.ActivityID)"
         >
@@ -306,9 +326,9 @@ onBeforeMount(async () => {
           >
             <div class="active-title title-underline">鄰近的景點</div>
             <div class="active-more pointer">
-              <router-link :to="{ name: 'PlacesIndex' }">
+              <router-link :to="{ name: 'ScenicSpotIndex' }">
                 查看更多景點<img
-                  src="../assets/icon/arrow-right16_R.png"
+                  src="../../assets/icon/arrow-right16_R.png"
                   class="arrow"
                   alt=""
                 />
@@ -318,9 +338,9 @@ onBeforeMount(async () => {
         </div>
         <div
           class="card col-lg-3 col-md-6"
-          v-for="data in placeDataList"
+          v-for="data in nearbyScenicSpot"
           :key="data"
-          @click="goActive(data.ScenicSpotID)"
+          @click="goPlace(data.ScenicSpotID)"
         >
           <div class="overflow-hidden places-card shadow">
             <div
@@ -339,7 +359,51 @@ onBeforeMount(async () => {
             <div class="card-title">{{ data.ScenicSpotName }}</div>
             <div class="text-muted">
               <i class="bi bi-geo-alt"></i
-              ><span class="city">{{ data.City }}</span>
+              ><span class="city">{{ data.Address }}</span>
+            </div>
+          </div>
+        </div>
+        <!-- 鄰近的美食 -->
+        <div class="active-wrap">
+          <div
+            class="active-title-wrap d-flex justify-content-between align-items-center mb-4"
+          >
+            <div class="active-title title-underline">鄰近的美食</div>
+            <div class="active-more pointer">
+              <router-link :to="{ name: 'ScenicSpotIndex' }">
+                查看更多美食<img
+                  src="../../assets/icon/arrow-right16_R.png"
+                  class="arrow"
+                  alt=""
+                />
+              </router-link>
+            </div>
+          </div>
+        </div>
+        <div
+          class="card col-lg-3 col-md-6"
+          v-for="data in nearbyRestaurant"
+          :key="data"
+          @click="goActive(data.ScenicSpotID)"
+        >
+          <div class="overflow-hidden places-card shadow">
+            <div
+              class="card-img"
+              :style="{
+                'background-image':
+                  'url(' +
+                  (data.Picture.PictureUrl1
+                    ? data.Picture.PictureUrl1
+                    : '/src/assets/img/nullPicture.png') +
+                  ')',
+              }"
+            ></div>
+          </div>
+          <div class="card-body">
+            <div class="card-title">{{ data.RestaurantName }}</div>
+            <div class="text-muted">
+              <i class="bi bi-geo-alt"></i
+              ><span class="city">{{ data.Address }}</span>
             </div>
           </div>
         </div>
@@ -351,5 +415,14 @@ onBeforeMount(async () => {
 .places-card {
   /* width: 250px; */
   height: 180px;
+}
+.card-img {
+  height: 180px;
+  transform: scale(1, 1);
+  transition: all 1s ease-out;
+}
+
+.card-img:hover {
+  transform: scale(1.2, 1.2);
 }
 </style>

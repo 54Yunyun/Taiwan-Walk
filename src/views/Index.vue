@@ -1,10 +1,9 @@
 <script setup>
 import { ref,onBeforeMount } from 'vue';
 import dayjs from 'dayjs';
-import { api } from '../axios/api.js'
+import { api } from '../api/api.js'
 import { useRouter } from 'vue-router';
-import { cities } from '../assets/js/cities.js';
-import {useLoading} from 'vue-loading-overlay'
+import { cities } from '../constants/cities.js';
 
 const activityDataList = ref([]);
 const placeDataList = ref([]);
@@ -13,10 +12,6 @@ const imgData = ref([]);
 const selectedActive = ref("");
 const selectedCity = ref("");
 const router = useRouter();
-// api url
-const activityUrl = 'v2/Tourism/Activity?%24top=30&%24format=JSON'
-const placeUrl = 'v2/Tourism/ScenicSpot?%24o&%24top=30&%24format=JSON'
-const foodUrl = 'v2/Tourism/Restaurant?%24&%24top=30&%24skip=13&%24format=JSON'
 
 // 格式化日期
 const today = new Date();
@@ -24,99 +19,57 @@ const formatDate = (date) => dayjs(date).format('YYYY/MM/DD');
 
 // 取得活動資料
 const fetchActivityList = async () => {
-  const res = await api.fetchList(activityUrl);
-  const {data,status} = res;
-  if(status == 200) {
-    // 取最近日期的前四筆活動
-    const sortedData = data.filter(item => new Date(item.StartTime) >= today)
-    .sort((a, b) => new Date(a.StartTime) - new Date(b.StartTime));
-    activityDataList.value=sortedData.slice(0, 4);
-  }
+  const data = await api.fetchActivityList();
+  const sortedData = data.filter(item => new Date(item.StartTime) >= today)
+     .sort((a, b) => new Date(a.StartTime) - new Date(b.StartTime));
+     activityDataList.value=sortedData.slice(0, 4);
 }
 // 取得景點資料
 const fetchScenicSpotList = async () => {
-  const res = await api.fetchList(placeUrl);
-  const {data,status} = res;
-  if(status == 200) {
-   console.log('data',data);
-    placeDataList.value=data.slice(0, 4);
-    if (data[0].Picture != null) {
-      imgData.value = [
-        {
-          url: data[0].Picture.PictureUrl1
-            ? data[0].Picture.PictureUrl1
-            : 'src/assets/img/nullPicture.png',
-          description: data[0].ScenicSpotName
-            ? data[0].ScenicSpotName
-            : '',
-        },
-        {
-          url: data[1].Picture.PictureUrl1
-            ? data[1].Picture.PictureUrl1
-            : 'src/assets/img/nullPicture.png',
-          description: data[1].ScenicSpotName
-            ? data[1].ScenicSpotName
-            : '',
-        },
-        {
-          url: data[2].Picture.PictureUrl1
-            ? data[2].Picture.PictureUrl1
-            : 'src/assets/img/nullPicture.png',
-          description: data[2].ScenicSpotName
-            ? data[2].ScenicSpotName
-            : '',
-        },
-        {
-          url: data[3].Picture.PictureUrl1
-            ? data[3].Picture.PictureUrl1
-            : 'src/assets/img/nullPicture.png',
-          description: data[3].ScenicSpotName
-            ? data[3].ScenicSpotName
-            : '',
-        },
-      ];
-    }
+  const data = await api.fetchPlaceList();
+  placeDataList.value = data.slice(0, 4);
+  for (let i = 0; i < placeDataList.value.length; i++) {
+    imgData.value.push({
+      url: placeDataList.value[i].Picture.PictureUrl1,
+      description: placeDataList.value[i].ScenicSpotName ? placeDataList.value[i].ScenicSpotName : '',
+    });
   }
-  console.log('placeUrl',placeUrl);
 }
 
 // 取得美食資料
 const fetchRestaurantList = async () => {
-  const res = await api.fetchList(foodUrl);
-  const {data,status} = res;
-  if(status == 200) {
-    foodDataList.value=data.slice(0, 4);
-  }
-  console.log('foodUrl',foodUrl);
+  const data = await api.fetchRestaurantList();
+  foodDataList.value=data.slice(0, 4);
 }
 
 // go to activity detail page
-const goActivity = (data) => {
+const goActivityDetail = (data) => {
     const activityID = data.ActivityID; 
     const url = `/activeDetail/${activityID}`;
     router.push({ path: url });
 }
 // go to place detail page
-const goPlace = (data) => {
+const goPlaceDetail = (data) => {
   const placeID = data.ScenicSpotID; 
   const url = `/placeDetail/${placeID}`;
   router.push({ path: url });
 }
 // 搜尋 探索景點、節慶活動、品嚐美食
 const search = () => {
-  if (selectedActive.value === 'PlacesIndex') {
-    router.push('/placesIndex');
+  if (selectedActive.value === 'ScenicSpotIndex') {
+    router.push('/scenicSpotIndex');
   } else if (selectedActive.value === 'ActiveIndex') {
     router.push('/activeIndex');
-  } else if (selectedActive.value === 'FoodIndex') {
-    router.push('/foodIndex');
+  } else if (selectedActive.value === 'RestaurantIndex') {
+    router.push('/restaurantIndex');
   }
 };
 
+
 onBeforeMount(() => {
-  fetchActivityList();
-  fetchScenicSpotList();
-  fetchRestaurantList();
+  // fetchActivityList();
+  // fetchScenicSpotList();
+  // fetchRestaurantList();
 });
 </script>
 <template>
@@ -145,9 +98,9 @@ onBeforeMount(() => {
           </select>
         <select class="form-select" aria-label="Default select example" v-model="selectedActive">
           <option value="" selected disabled hidden>請選擇活動</option>
-          <option value="PlacesIndex">精選活動</option>
+          <option value="ScenicSpotIndex">精選活動</option>
           <option value="ActiveIndex">探索景點</option>
-          <option value="FoodIndex">品嚐美食</option>
+          <option value="RestaurantIndex">品嚐美食</option>
         </select>
        
         <div class="form-btn">
@@ -232,12 +185,12 @@ onBeforeMount(() => {
       </div>
     </div>
     <div class="row row-cols-1 row-cols-md-2 gy-3">
-      <div class="col-12 col-lg-6 mb-3 pointer" v-for="data in activityDataList" :key="data" @click="goActivity(data)">
+      <div class="col-12 col-lg-6 mb-3 pointer" v-for="data in activityDataList" :key="data" @click="goActivityDetail(data)">
         <div class="active-card card shadow">
           <div class="row g-0">
             <div class="overflow-hidden col-4">
               <div class="card-img active-img"
-              :style="{ 'background-image': 'url(' + (data.Picture.PictureUrl1 ? data.Picture.PictureUrl1 : 'src/assets/img/nullPicture.png') + ')' }">
+              :style="{ 'background-image': 'url(' + (data.Picture.PictureUrl1) + ')' }">
               </div>
             </div>
             <div class="col-8">
@@ -268,17 +221,17 @@ onBeforeMount(() => {
       <div class="active-title-wrap d-flex">
         <div class="active-title title-underline">熱門打卡景點</div>
         <div class="active-more pointer">
-          <router-link :to="{ name: 'PlacesIndex' }">
+          <router-link :to="{ name: 'ScenicSpotIndex' }">
             查看更多景點<img src="../assets/icon/arrow-right16_R.png" class="arrow" alt="" />
           </router-link>       
         </div>
       </div>
     </div>
     <div class="row">
-      <div class="card col-lg-3 col-md-6" v-for="data in placeDataList" :key="data" @click="goPlace(data)">
+      <div class="card col-lg-3 col-md-6" v-for="data in placeDataList" :key="data" @click="goPlaceDetail(data)">
         <div class="overflow-hidden places-card shadow">
           <div class="card-img"
-              :style="{ 'background-image': 'url(' + (data.Picture.PictureUrl1 ? data.Picture.PictureUrl1 : 'src/assets/img/nullPicture.png') + ')' }">
+              :style="{ 'background-image': 'url(' + (data.Picture.PictureUrl1) + ')' }">
           </div>
         </div>
         <div class="card-body">
@@ -295,7 +248,7 @@ onBeforeMount(() => {
       <div class="active-title-wrap d-flex">
         <div class="active-title title-underline">一再回訪美食</div>
         <div class="active-more">
-          <router-link :to="{ name: 'FoodIndex' }">
+          <router-link :to="{ name: 'RestaurantIndex' }">
             查看更多美食<img src="../assets/icon/arrow-right16_R.png" class="arrow" alt="" />
           </router-link>        
         </div>
@@ -305,7 +258,7 @@ onBeforeMount(() => {
       <div class="card col-lg-3 col-md-6" v-for="data in foodDataList" :key="data">
         <div class="overflow-hidden places-card shadow ">
           <div class="card-img"
-              :style="{ 'background-image': 'url(' + (data.Picture.PictureUrl1 ? data.Picture.PictureUrl1 : 'src/assets/img/nullPicture.png') + ')' }">
+              :style="{ 'background-image': 'url(' + (data.Picture.PictureUrl1) + ')' }">
           </div>
         </div>
         <div class="card-body">
@@ -458,7 +411,6 @@ onBeforeMount(() => {
 @media (max-width:768px) {
   .search-title{
     text-align: center;
-
   }
 }
 </style>

@@ -31,13 +31,13 @@ watchEffect(() => {
                 精選活動
               </li></router-link
             >
-            <router-link :to="{ name: 'PlacesIndex' }"
-              ><li :class="{ current: currentPage === 'PlacesIndex' || currentPage === 'PlaceDetail'}">
+            <router-link :to="{ name: 'ScenicSpotIndex' }"
+              ><li :class="{ current: currentPage === 'ScenicSpotIndex' || currentPage === 'ScenicSpotDetail'}">
                 探索景點
               </li></router-link
             >
-            <router-link :to="{ name: 'FoodIndex' }"
-              ><li :class="{ current: currentPage === 'FoodIndex' }">
+            <router-link :to="{ name: 'RestaurantIndex' }"
+              ><li :class="{ current: currentPage === 'RestaurantIndex' }">
                 品嚐美食
               </li></router-link
             >

@@ -13,29 +13,29 @@ const router = createRouter({
           component: () => import('../views/Index.vue'),
         },
         {
-          path: '/placesIndex/:city?/:class?',
-          name: 'PlacesIndex',
-          component: () => import('../views/PlacesIndex.vue'),
+          path: '/scenicSpotIndex/:city?/:class?',
+          name: 'ScenicSpotIndex',
+          component: () => import('../views/ScenicSpot/ScenicSpotIndex.vue'),
         },
         {
           path: '/activeIndex/:city?/:class?',
           name: 'ActiveIndex',
-          component: () => import('../views/ActiveIndex.vue'),
+          component: () => import('../views/Active/ActiveIndex.vue'),
         },
         {
-          path: '/foodIndex',
-          name: 'FoodIndex',
-          component: () => import('../views/FoodIndex.vue'),
+          path: '/restaurantIndex',
+          name: 'RestaurantIndex',
+          component: () => import('../views/Restaurant/RestaurantIndex.vue'),
         },
         {       
           path: '/activeDetail/:Id',
           name: 'ActiveDetail',
-          component: () => import('../views/ActiveDetail.vue')
+          component: () => import('../views/Active/ActiveDetail.vue')
         },
         {       
-          path: '/placeDetail/:Id',
-          name: 'PlaceDetail',
-          component: () => import('../views/PlaceDetail.vue')
+          path: '/scenicSpotDetail/:Id',
+          name: 'ScenicSpotDetail',
+          component: () => import('../views/ScenicSpot/ScenicSpotDetail.vue')
         },
       ],
     },
