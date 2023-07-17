@@ -31,9 +31,11 @@ const onClickHandler = (page) => {
   currentPage.value = page;
 };
 
-const loadData = () => {
-  router.push({ name: 'ActiveIndex' });
-};
+// const loadData = () => {
+//   routeParams.city = '';
+//   routeParams.class = '';
+//   router.push({ name: 'ActiveIndex' });
+// };
 const visibleCities = computed(() => {
   // 如果當前頁碼是 1，起始index start 則是 0，從 citiesList  index[0] 取出 12 筆資料
   const start = (currentPage.value - 1) * 12;
@@ -93,7 +95,10 @@ const goActiveClass = async (ClassName) => {
   routeParams.class = ClassName;
   router.replace({ name: 'ActiveIndex', params: routeParams });
 };
-
+const clear = () =>{
+  selectedCity.value = '';
+  selectedActive.value = '';
+}
 onMounted(() => {
   const city = route.params.city || '';
   const className = route.params.class || '';
@@ -110,8 +115,9 @@ onMounted(() => {
             >首頁</router-Link
           >
         </li>
-        <li class="breadcrumb-item pointer">
-        <a @click="loadData()">精選活動</a> 
+        <li class="breadcrumb-item">
+          <router-Link :to="{ name: 'ActiveIndex' }" class="text-decoration-none"
+            >精選活動 </router-Link>
         </li>
       </ol>
     </nav>
@@ -145,6 +151,9 @@ onMounted(() => {
       </div>
 
       <div class="form-btn col-lg-2 mb-3">
+        <button class="search-btn clear-btn" @click="clear">
+          清除
+        </button>
         <button class="search-btn" @click="selectSearch">
           <span class="search-img">
             <img src="../../assets/icon/Union.png" alt="" />

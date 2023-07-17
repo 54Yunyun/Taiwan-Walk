@@ -23,7 +23,7 @@ const router = createRouter({
           component: () => import('../views/Active/ActiveIndex.vue'),
         },
         {
-          path: '/restaurantIndex',
+          path: '/restaurantIndex/:city?/:class?',
           name: 'RestaurantIndex',
           component: () => import('../views/Restaurant/RestaurantIndex.vue'),
         },
@@ -36,6 +36,11 @@ const router = createRouter({
           path: '/scenicSpotDetail/:Id',
           name: 'ScenicSpotDetail',
           component: () => import('../views/ScenicSpot/ScenicSpotDetail.vue')
+        },
+        {       
+          path: '/restaurantDetail/:Id',
+          name: 'RestaurantDetail',
+          component: () => import('../views/Restaurant/RestaurantDetail.vue')
         },
       ],
     },

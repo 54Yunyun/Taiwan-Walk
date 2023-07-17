@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router';
 import { cities } from '../../constants/cities.js';
 import dayjs from 'dayjs';
 const router = useRouter();
+const mode = 'Activity';
 // 取得點選的縣市ID
 let id = router.currentRoute.value.params.Id;
 // 格式化日期
@@ -15,13 +16,12 @@ const formatDate = (date) => dayjs(date).format('YYYY/MM/DD');
 const imgData = ref([]);
 const activeData = ref([]);
 const mapSrc = ref('');
-let positionLat = ref('');
-let positionLon = ref('');
 const nearbyActivity = ref([]);
 const nearbyScenicSpot = ref([]);
 const nearbyRestaurant = ref([]);
 const goBackCity = ref();
-const mode = 'Activity';
+let positionLat = ref('');
+let positionLon = ref('');
 
 // 取得相關縣市資料
 const fetchOne = async () => {
@@ -29,7 +29,6 @@ const fetchOne = async () => {
   activeData.value = data;
   const matchedCity = cities.find((city) => city.name === data[0].City);
   goBackCity.value = matchedCity ? matchedCity.value : '';
-  console.log(goBackCity);
   positionLat.value = data[0].Position.PositionLat;
   positionLon.value = data[0].Position.PositionLon;
   mapSrc.value = `https://maps.google.com.tw/maps?f=q&hl=zh-TW&geocode=&q=${positionLat.value},${positionLon.value}&z=16&output=embed&t=`;
@@ -78,12 +77,11 @@ const fetchNearbyScenicSpot = async () => {
     positionLat.value,
     positionLon.value
   );
-  console.log('fetchNearbyScenicSpot',data);
   nearbyScenicSpot.value = data;
 };
 
 // 取得附近美食
-const fetchNearbyRestaurant= async () => {
+const fetchNearbyRestaurant = async () => {
   const data = await api.fetchNearbyList(
     'Restaurant',
     positionLat.value,
@@ -92,26 +90,16 @@ const fetchNearbyRestaurant= async () => {
   nearbyRestaurant.value = data;
 };
 
-// 取得點選的縣市ID
-const goActive = async (ActivityID) => {
-  id = ActivityID;
-  const url = `/activeDetail/${ActivityID}`;
-  // 跳轉至對應 id 頁面
+const goMode = async (mode, id) => {
+  const url = `/${mode}Detail/${id}`;
   router.push(url);
-  await searchActive();
 };
-const goPlace = async (ScenicSpotID) => {
-  id = ScenicSpotID;
-  const url = `/scenicSpotDetail/${ScenicSpotID}`;
-  // 跳轉至對應 id 頁面
-  router.push(url);
-  await fetchNearbyPlace();
-};
+
 onMounted(async () => {
   await fetchOne();
-  // await fetchNearbyActive();
-  // await fetchNearbyScenicSpot();
-  // await fetchNearbyRestaurant();
+  await fetchNearbyActive();
+  await fetchNearbyScenicSpot();
+  await fetchNearbyRestaurant();
 });
 </script>
 <template>
@@ -145,7 +133,11 @@ onMounted(async () => {
               name: 'ActiveIndex',
               params: {
                 city: goBackCity,
-                class: active.Class1 || active.Class2 || '',
+                class: active.Class1
+                  ? active.Class1
+                  : active.Class2
+                  ? active.Class2
+                  : '',
               },
             }"
             class="text-decoration-none"
@@ -296,7 +288,7 @@ onMounted(async () => {
           class="card col-lg-3 col-md-6"
           v-for="data in nearbyActivity"
           :key="data"
-          @click="goActive(data.ActivityID)"
+          @click="goMode('active', data.ActivityID)"
         >
           <div class="overflow-hidden places-card shadow">
             <div
@@ -340,7 +332,7 @@ onMounted(async () => {
           class="card col-lg-3 col-md-6"
           v-for="data in nearbyScenicSpot"
           :key="data"
-          @click="goPlace(data.ScenicSpotID)"
+          @click="goMode('scenicSpot', data.ScenicSpotID)"
         >
           <div class="overflow-hidden places-card shadow">
             <div
@@ -384,7 +376,7 @@ onMounted(async () => {
           class="card col-lg-3 col-md-6"
           v-for="data in nearbyRestaurant"
           :key="data"
-          @click="goActive(data.ScenicSpotID)"
+          @click="goMode('restaurant', data.RestaurantID)"
         >
           <div class="overflow-hidden places-card shadow">
             <div

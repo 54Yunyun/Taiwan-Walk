@@ -56,6 +56,7 @@ const selectSearch = async () => {
   const isActivitySelected = selectedActive.value !== '';
   // 如果兩者都選了，則進行縣市加活動的搜尋
   if (isCitySelected && isActivitySelected) {
+    console.log('1', selectedCity.value, selectedActive.value);
     activeClass.value = selectedActive.value;
     data = await api.fetchCityClassList(
       mode,
@@ -63,9 +64,11 @@ const selectSearch = async () => {
       `${selectedActive.value}`
     );
   } else if (isCitySelected) {
+    console.log('2', selectedCity.value, selectedActive.value);
     // 如果只選了縣市，則進行縣市搜尋
     data = await api.fetchCityClassList(mode, `${selectedCity.value}`, '');
   } else if (isActivitySelected) {
+    console.log('3', selectedCity.value, selectedActive.value);
     activeClass.value = selectedActive.value;
     // 如果只選了活動，則進行活動搜尋
     data = await api.fetchCityClassList(mode, '', `${selectedActive.value}`);
@@ -82,6 +85,10 @@ const selectSearch = async () => {
   routeParams.class = selectedActive.value;
   router.replace({ name: 'ScenicSpotIndex', params: routeParams });
 };
+const clear = () =>{
+  selectedCity.value = '';
+  selectedActive.value = '';
+}
 onMounted(() => {
   const city = route.params.city || '';
   const className = route.params.class || '';
@@ -131,6 +138,9 @@ onMounted(() => {
       </div>
 
       <div class="form-btn col-lg-2 mb-3">
+        <button class="search-btn clear-btn" @click="clear">
+          清除
+        </button>
         <button class="search-btn" @click="selectSearch">
           <span class="search-img">
             <img src="../../assets/icon/Union.png" alt="" />

@@ -1,13 +1,13 @@
 <script setup>
-import { ref,onBeforeMount } from 'vue';
+import { ref,onMounted } from 'vue';
 import dayjs from 'dayjs';
 import { api } from '../api/api.js'
 import { useRouter } from 'vue-router';
 import { cities } from '../constants/cities.js';
 
 const activityDataList = ref([]);
-const placeDataList = ref([]);
-const foodDataList = ref([]);
+const scenicSpotList = ref([]);
+const restaurantList = ref([]);
 const imgData = ref([]);
 const selectedActive = ref("");
 const selectedCity = ref("");
@@ -22,16 +22,16 @@ const fetchActivityList = async () => {
   const data = await api.fetchActivityList();
   const sortedData = data.filter(item => new Date(item.StartTime) >= today)
      .sort((a, b) => new Date(a.StartTime) - new Date(b.StartTime));
-     activityDataList.value=sortedData.slice(0, 4);
+     activityDataList.value=data.slice(0, 4);
 }
 // 取得景點資料
 const fetchScenicSpotList = async () => {
   const data = await api.fetchPlaceList();
-  placeDataList.value = data.slice(0, 4);
-  for (let i = 0; i < placeDataList.value.length; i++) {
+  scenicSpotList.value = data.slice(0, 4);
+  for (let i = 0; i < scenicSpotList.value.length; i++) {
     imgData.value.push({
-      url: placeDataList.value[i].Picture.PictureUrl1,
-      description: placeDataList.value[i].ScenicSpotName ? placeDataList.value[i].ScenicSpotName : '',
+      url: scenicSpotList.value[i].Picture.PictureUrl1,
+      description: scenicSpotList.value[i].ScenicSpotName ? scenicSpotList.value[i].ScenicSpotName : '',
     });
   }
 }
@@ -39,21 +39,24 @@ const fetchScenicSpotList = async () => {
 // 取得美食資料
 const fetchRestaurantList = async () => {
   const data = await api.fetchRestaurantList();
-  foodDataList.value=data.slice(0, 4);
+  restaurantList.value=data.slice(0, 4);
 }
-
-// go to activity detail page
-const goActivityDetail = (data) => {
-    const activityID = data.ActivityID; 
-    const url = `/activeDetail/${activityID}`;
-    router.push({ path: url });
-}
-// go to place detail page
-const goPlaceDetail = (data) => {
-  const placeID = data.ScenicSpotID; 
-  const url = `/placeDetail/${placeID}`;
-  router.push({ path: url });
-}
+const goMode = async (mode, id) => {
+  const url = `/${mode}Detail/${id}`;
+  router.push(url);
+};
+// // go to activity detail page
+// const goActivityDetail = (data) => {
+//     const activityID = data.ActivityID; 
+//     const url = `/activeDetail/${activityID}`;
+//     router.push({ path: url });
+// }
+// // go to place detail page
+// const goPlaceDetail = (data) => {
+//   const placeID = data.ScenicSpotID; 
+//   const url = `/placeDetail/${placeID}`;
+//   router.push({ path: url });
+// }
 // 搜尋 探索景點、節慶活動、品嚐美食
 const search = () => {
   if (selectedActive.value === 'ScenicSpotIndex') {
@@ -66,10 +69,10 @@ const search = () => {
 };
 
 
-onBeforeMount(() => {
-  // fetchActivityList();
-  // fetchScenicSpotList();
-  // fetchRestaurantList();
+onMounted(async() => {
+  await fetchActivityList();
+  await fetchScenicSpotList();
+  await fetchRestaurantList();
 });
 </script>
 <template>
@@ -185,7 +188,7 @@ onBeforeMount(() => {
       </div>
     </div>
     <div class="row row-cols-1 row-cols-md-2 gy-3">
-      <div class="col-12 col-lg-6 mb-3 pointer" v-for="data in activityDataList" :key="data" @click="goActivityDetail(data)">
+      <div class="col-12 col-lg-6 mb-3 pointer" v-for="data in activityDataList" :key="data" @click="goMode('active', data.ActivityID)">
         <div class="active-card card shadow">
           <div class="row g-0">
             <div class="overflow-hidden col-4">
@@ -228,7 +231,7 @@ onBeforeMount(() => {
       </div>
     </div>
     <div class="row">
-      <div class="card col-lg-3 col-md-6" v-for="data in placeDataList" :key="data" @click="goPlaceDetail(data)">
+      <div class="card col-lg-3 col-md-6" v-for="data in scenicSpotList" :key="data" @click="goMode('scenicSpot', data.ScenicSpotID)">
         <div class="overflow-hidden places-card shadow">
           <div class="card-img"
               :style="{ 'background-image': 'url(' + (data.Picture.PictureUrl1) + ')' }">
@@ -255,7 +258,7 @@ onBeforeMount(() => {
       </div>
     </div>
     <div class="row">
-      <div class="card col-lg-3 col-md-6" v-for="data in foodDataList" :key="data">
+      <div class="card col-lg-3 col-md-6" v-for="data in restaurantList" :key="data" @click="goMode('restaurant', data.RestaurantID)">
         <div class="overflow-hidden places-card shadow ">
           <div class="card-img"
               :style="{ 'background-image': 'url(' + (data.Picture.PictureUrl1) + ')' }">

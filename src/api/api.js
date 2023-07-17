@@ -36,9 +36,10 @@ const api = {
   // 首頁，取得活動列表
   async fetchActivityList() {
     try {
-      const url = `${basicPath}/v2/Tourism/Activity?$select=ActivityId,
+      const url = `${basicPath}v2/Tourism/Activity?$select=ActivityId,
                     ActivityName,Picture,Address,Class1,Class2
-                    &$filter=Picture/PictureUrl1 ne null and StartTime ge ${today}&$top=30&$format=JSON`;
+                    &$filter=Picture/PictureUrl1 ne null and StartTime ge ${today}  
+                    and StartTime asc &$top=30&$format=JSON`;
       const res = await axios.get(url, {
         headers: this.login(),
       });
@@ -54,7 +55,7 @@ const api = {
   // 取得景點列表
   async fetchPlaceList() {
     try {
-      const url = `${basicPath}/v2/Tourism/ScenicSpot?$select=ScenicSpotId,
+      const url = `${basicPath}v2/Tourism/ScenicSpot?$select=ScenicSpotId,
       ScenicSpotName,Picture,Address,Class1,Class2,Class3,OpenTime,TicketInfo
       &$filter=Picture/PictureUrl1 ne null &$top=30&$format=JSON`;
       const res = await axios.get(url, {
@@ -72,7 +73,7 @@ const api = {
   // 取得美食列表
   async fetchRestaurantList() {
     try {
-      const url = `${basicPath}/v2/Tourism/Restaurant?$select=RestaurantId,
+      const url = `${basicPath}v2/Tourism/Restaurant?$select=RestaurantId,
       RestaurantName,Picture,Address,Class,OpenTime&$filter=Picture/
       PictureUrl1 ne null &$top=30&$format=JSON`;
       const res = await axios.get(url, {
@@ -113,15 +114,27 @@ const api = {
       let url = `${basicPath}${mode}/${city}?`;
       url += `$top=30&$format=JSON`;
       url += `&$select=${mode}ID,${mode}Name,Address,Picture`;
-      if (mode === 'ScenicSpot')
-        url += ',Class1,Class2,Class3,OpenTime,TicketInfo';
-      if (mode === 'Restaurant') url += ',Class,OpenTime';
-      if (mode === 'Activity') url += ',Class1,Class2';
-      url += `&$filter=Picture/PictureUrl1 ne null`;
+      switch (mode) {
+        case 'ScenicSpot':
+          url += ',Class1,Class2,Class3,OpenTime,TicketInfo&$filter=Picture/PictureUrl1 ne null'
+          break;
+        case 'Restaurant':
+          url += ',Class,OpenTime&$filter=Picture/PictureUrl1 ne null'
+          break;
+        case 'Activity':
+          url += `,Class1,Class2&$orderby=StartTime asc&$filter=Picture/PictureUrl1 ne null and StartTime ge ${today}`
+          break;
+      }
+      // if (mode === 'ScenicSpot')
+      //   url += ',Class1,Class2,Class3,OpenTime,TicketInfo';
+      // if (mode === 'Restaurant') url += ',Class,OpenTime';
+      // if (mode === 'Activity') url += ',Class1,Class2&$orderby=StartTime asc';
+      // url += `&$filter=Picture/PictureUrl1 ne null and StartTime ge ${today}`;
       const res = await axios.get(url, {
         headers: this.login(),
       });
       const { data, status } = res;
+
       if (status === 200) {
         return data;
       }
@@ -139,22 +152,40 @@ const api = {
       let url = `${basicPath}${mode}/${city}?${className}`;
       url += `$top=200&$format=JSON`;
       url += `&$select=${mode}ID,${mode}Name,Address,Picture`;
-      if (mode === 'ScenicSpot')
-        (url += ',Class1,Class2,Class3,OpenTime,TicketInfo'),
-        console.log(url);
-          (filter += ` or contains(Class1,'${className}') or contains(Class2,'${className}')`);
-      if (mode === 'Restaurant')
-        (url += ',Class,OpenTime'),
-          (filter += ` or contains(Class,'${className}')`);
-      if (mode === 'Activity') url += ',Class1,Class2';
-      (url += `&$filter=Picture/PictureUrl1 ne null`),
-        (filter += ` or contains(Class1,'${className}') or contains(Class2,'${className}')`);
+      switch (mode) {
+        case 'ScenicSpot':
+          url += ',Class1,Class2,Class3,OpenTime,TicketInfo'
+          filter += ` or contains(Class1,'${className}') or contains(Class2,'${className}')`
+          break;
+        case 'Restaurant':
+          url += ',Class,OpenTime'
+          filter += ` or contains(Class,'${className}')`
+          break;
+        case 'Activity':
+          url += ',Class1,Class2&$orderby=StartTime asc'
+          filter += ` or contains(Class1,'${className}') or contains(Class2,'${className}  and StartTime ge ${today}')`
+          break;
+      }
+      url += `&$filter=Picture/PictureUrl1 ne null`;
       filter = filter.replace(' or ', '');
       url += ` and (${filter})`;
+      // if (mode === 'ScenicSpot'){
+      //   (url += ',Class1,Class2,Class3,OpenTime,TicketInfo'),
+      //   (filter += ` or contains(Class1,'${className}') or contains(Class2,'${className}')`);
+      // }
+      // if (mode === 'Restaurant')
+      //   (url += ',Class,OpenTime'),
+      //     (filter += ` or contains(Class,'${className}')`);
+      // if (mode === 'Activity') url += ',Class1,Class2&$orderby=StartTime asc';
+      // (url += `&$filter=Picture/PictureUrl1 ne null and StartTime ge ${today}`),
+      //   (filter += ` or contains(Class1,'${className}') or contains(Class2,'${className}')`);
+      // filter = filter.replace(' or ', '');
+      // url += ` and (${filter})`;
       const res = await axios.get(url, {
         headers: this.login(),
       });
       const { data, status } = res;
+      console.log('res',data);
       if (status === 200) {
         return data;
       }
@@ -169,10 +200,21 @@ const api = {
       let url = `${basicPath}${mode}?`;
       url += `$top=4&$format=JSON`;
       url += `&$select=${mode}ID,${mode}Name,Address,Picture`;
-      if (mode === 'ScenicSpot')
-        url += ',Class1,Class2,Class3,OpenTime,TicketInfo';
-      if (mode === 'Restaurant') url += ',Class,OpenTime';
-      if (mode === 'Activity') url += ',Class1,Class2';
+      switch (mode) {
+        case 'ScenicSpot':
+          url += ',Class1,Class2,Class3,OpenTime,TicketInfo'
+          break;
+        case 'Restaurant':
+          url += ',Class,OpenTime'
+          break;
+        case 'Activity':
+          url += ',Class1,Class2'
+          break;
+      }
+      // if (mode === 'ScenicSpot')
+      //   url += ',Class1,Class2,Class3,OpenTime,TicketInfo';
+      // if (mode === 'Restaurant') url += ',Class,OpenTime';
+      // if (mode === 'Activity') url += ',Class1,Class2';
       url += `&$spatialFilter=nearby(${lat},${lon},50000)`;
       url += `&$filter=Picture/PictureUrl1 ne null`;
       const res = await axios.get(url, {
