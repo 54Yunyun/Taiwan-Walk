@@ -179,7 +179,7 @@ onMounted(() => {
           <div class="no-data-container">
             <div class="no-data-img">
               <div class="no-data-circle">
-                <img src="../assets/icon/noData.png" alt="" />
+                <img src="../../assets/icon/noData.png" alt="" />
               </div>
             </div>
             <div class="no-data-info pt-2">很抱歉，找不到任何資料!</div>
