@@ -41,38 +41,34 @@ const fetchRestaurantList = async () => {
   const data = await api.fetchRestaurantList();
   restaurantList.value=data.slice(0, 4);
 }
-const goMode = async (mode, id) => {
+
+// 探索景點、節慶活動、品嚐美食 內頁
+const goModeDetail = (mode, id) => {
   const url = `/${mode}Detail/${id}`;
   router.push(url);
 };
-// // go to activity detail page
-// const goActivityDetail = (data) => {
-//     const activityID = data.ActivityID; 
-//     const url = `/activeDetail/${activityID}`;
-//     router.push({ path: url });
-// }
-// // go to place detail page
-// const goPlaceDetail = (data) => {
-//   const placeID = data.ScenicSpotID; 
-//   const url = `/placeDetail/${placeID}`;
-//   router.push({ path: url });
-// }
+
+
+
 // 搜尋 探索景點、節慶活動、品嚐美食
-const search = () => {
-  if (selectedActive.value === 'ScenicSpotIndex') {
-    router.push('/scenicSpotIndex');
-  } else if (selectedActive.value === 'ActiveIndex') {
-    router.push('/activeIndex');
-  } else if (selectedActive.value === 'RestaurantIndex') {
-    router.push('/restaurantIndex');
+const goModeIndex = (mode,city) => {
+  let url = '/';
+  if(!mode && !city || !mode && city){
+    alert('主題不得為空，請重新選擇');
   }
+  if(mode){
+    url += `${mode}`;
+  }
+  if (mode && city) {
+    url += `${mode}/${city}`;
+  }
+  router.push(url);
 };
 
-
 onMounted(async() => {
-  await fetchActivityList();
-  await fetchScenicSpotList();
-  await fetchRestaurantList();
+   fetchActivityList();
+   fetchScenicSpotList();
+   fetchRestaurantList();
 });
 </script>
 <template>
@@ -100,14 +96,14 @@ onMounted(async() => {
             </option>
           </select>
         <select class="form-select" aria-label="Default select example" v-model="selectedActive">
-          <option value="" selected disabled hidden>請選擇活動</option>
-          <option value="ScenicSpotIndex">精選活動</option>
-          <option value="ActiveIndex">探索景點</option>
-          <option value="RestaurantIndex">品嚐美食</option>
+          <option value="" selected disabled hidden>請選擇主題</option>
+          <option value="scenicSpotIndex">精選活動</option>
+          <option value="activeIndex">探索景點</option>
+          <option value="restaurantIndex">品嚐美食</option>
         </select>
        
         <div class="form-btn">
-          <button class="search-btn" @click="search">
+          <button :class="['search-btn', { 'disabled': isSearchDisabled }]" :disabled="isSearchDisabled"  @click="goModeIndex(selectedActive,selectedCity)">
             <span class="search-img">
               <img src="../assets/icon/Union.png" alt="" />
             </span>
@@ -188,7 +184,7 @@ onMounted(async() => {
       </div>
     </div>
     <div class="row row-cols-1 row-cols-md-2 gy-3">
-      <div class="col-12 col-lg-6 mb-3 pointer" v-for="data in activityDataList" :key="data" @click="goMode('active', data.ActivityID)">
+      <div class="col-12 col-lg-6 mb-3 pointer" v-for="data in activityDataList" :key="data" @click="goModeDetail('active', data.ActivityID)">
         <div class="active-card card shadow">
           <div class="row g-0">
             <div class="overflow-hidden col-4">
@@ -231,7 +227,7 @@ onMounted(async() => {
       </div>
     </div>
     <div class="row">
-      <div class="card col-lg-3 col-md-6" v-for="data in scenicSpotList" :key="data" @click="goMode('scenicSpot', data.ScenicSpotID)">
+      <div class="card col-lg-3 col-md-6" v-for="data in scenicSpotList" :key="data" @click="goModeDetail('scenicSpot', data.ScenicSpotID)">
         <div class="overflow-hidden places-card shadow">
           <div class="card-img"
               :style="{ 'background-image': 'url(' + (data.Picture.PictureUrl1) + ')' }">
@@ -258,7 +254,7 @@ onMounted(async() => {
       </div>
     </div>
     <div class="row">
-      <div class="card col-lg-3 col-md-6" v-for="data in restaurantList" :key="data" @click="goMode('restaurant', data.RestaurantID)">
+      <div class="card col-lg-3 col-md-6" v-for="data in restaurantList" :key="data" @click="goModeDetail('restaurant', data.RestaurantID)">
         <div class="overflow-hidden places-card shadow ">
           <div class="card-img"
               :style="{ 'background-image': 'url(' + (data.Picture.PictureUrl1) + ')' }">

@@ -88,7 +88,7 @@ const fetchNearbyRestaurant = async () => {
   nearbyRestaurant.value = data;
 };
 
-const goMode = async (mode, id) => {
+const goModeDetail =  (mode, id) => {
   const url = `/${mode}Detail/${id}`;
   router.push(url);
 };
@@ -287,7 +287,7 @@ onMounted(async () => {
           class="card col-lg-3 col-md-6"
           v-for="data in nearbyScenicSpot"
           :key="data"
-          @click="goMode('scenicSpot', data.ScenicSpotID)"
+          @click="goModeDetail('scenicSpot', data.ScenicSpotID)"
         >
           <div class="overflow-hidden places-card shadow">
             <div
@@ -331,7 +331,7 @@ onMounted(async () => {
           class="card col-lg-3 col-md-6"
           v-for="data in nearbyActivity"
           :key="data"
-          @click="goMode('active', data.ActivityID)"
+          @click="goModeDetail('active', data.ActivityID)"
         >
           <div class="overflow-hidden places-card shadow">
             <div
@@ -375,7 +375,7 @@ onMounted(async () => {
           class="card col-lg-3 col-md-6"
           v-for="data in nearbyRestaurant"
           :key="data"
-          @click="goMode('restaurant', data.RestaurantID)"
+          @click="goModeDetail('restaurant', data.RestaurantID)"
         >
           <div class="overflow-hidden places-card shadow">
             <div

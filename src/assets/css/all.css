@@ -18,7 +18,9 @@ a {
 .places-card {
   border-radius: calc(0.375rem - 1px);
 }
-
+input{
+  margin-right: 5px;
+}
 /* 標題 */
 .active-title {
   font-size: 30px;

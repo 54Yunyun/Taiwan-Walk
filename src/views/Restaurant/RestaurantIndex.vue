@@ -55,7 +55,6 @@ const selectSearch = async () => {
   const isActivitySelected = selectedActive.value !== '';
   // 如果兩者都選了，則進行縣市加活動的搜尋
   if (isCitySelected && isActivitySelected) {
-    console.log('1', selectedCity.value, selectedActive.value);
     activeClass.value = selectedActive.value;
     data = await api.fetchCityClassList(
       mode,
@@ -63,12 +62,9 @@ const selectSearch = async () => {
       `${selectedActive.value}`
     );
   } else if (isCitySelected) {
-    console.log('2', selectedCity.value, selectedActive.value);
     // 如果只選了縣市，則進行縣市搜尋
     data = await api.fetchCityClassList(mode, `${selectedCity.value}`, '');
-    console.log('data', data);
   } else if (isActivitySelected) {
-    console.log('3', selectedCity.value, selectedActive.value);
     activeClass.value = selectedActive.value;
     // 如果只選了活動，則進行活動搜尋
     data = await api.fetchCityClassList(mode, '', `${selectedActive.value}`);

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { api } from '../../api/api.js';
 import { cities } from '../../constants/cities.js';
@@ -10,6 +10,7 @@ const router = useRouter();
 const route = useRoute();
 const mode = 'Activity';
 // 格式化日期
+const today = new Date().toISOString();
 const formatDate = (date) => dayjs(date).format('YYYY/MM/DD');
 const loading = ref();
 const currentPage = ref(1);
@@ -21,7 +22,9 @@ const selectedActive = ref(route.params.active || '');
 let selectedId = ref();
 let citiesCount = ref(0);
 let search = ref(false);
+let showAllData = ref(false);
 let data = {};
+let allData = {};
 
 const routeParams = {
   city: selectedCity.value,
@@ -31,18 +34,19 @@ const onClickHandler = (page) => {
   currentPage.value = page;
 };
 
-// const loadData = () => {
-//   routeParams.city = '';
-//   routeParams.class = '';
-//   router.push({ name: 'ActiveIndex' });
-// };
 const visibleCities = computed(() => {
   // 如果當前頁碼是 1，起始index start 則是 0，從 citiesList  index[0] 取出 12 筆資料
   const start = (currentPage.value - 1) * 12;
   // 因index 起始是 0 ，所以 end 為 start + 12;
   const end = start + 12;
   // 回傳 index[start] ~ index[end] 的資料
-  return citiesList.value.slice(start, end);
+  if (showAllData.value) {
+    citiesCount.value = allData.value.length;
+    return allData.value.slice(start, end); // 显示所有活动
+  } else {
+    citiesCount.value = citiesList.value.length;
+    return citiesList.value.slice(start, end);
+  }
 });
 
 const selectSearch = async () => {
@@ -68,8 +72,11 @@ const selectSearch = async () => {
   if (data.length >= 0) {
     search.value = true;
   }
-  citiesCount.value = data.length;
-  citiesList.value = data;
+
+  allData.value = data;
+  citiesList.value = data.filter((data) => data.StartTime >= today);
+  citiesCount.value = citiesList.value.length;
+
   const matchedCity = cities.find((city) => city.value === selectedCity.value);
   chineseCityName.value = matchedCity ? matchedCity.name : '';
   routeParams.city = selectedCity.value;
@@ -89,20 +96,21 @@ const goActiveClass = async (ClassName) => {
   data = await api.fetchCityClassList(mode, '', `${ClassName}`);
   search.value = true;
   activeClass.value = ClassName;
-  citiesCount.value = data.length;
-  citiesList.value = data;
+  allData.value = data;
+  citiesList.value = data.filter((data) => data.StartTime >= today);
+  citiesCount.value = citiesList.value.length;
   routeParams.city = '';
   routeParams.class = ClassName;
   router.replace({ name: 'ActiveIndex', params: routeParams });
 };
-const clear = () =>{
+const clear = () => {
   selectedCity.value = '';
   selectedActive.value = '';
-}
+};
 onMounted(() => {
   const city = route.params.city || '';
   const className = route.params.class || '';
-  selectSearch();
+  // selectSearch();
 });
 </script>
 <template>
@@ -116,8 +124,11 @@ onMounted(() => {
           >
         </li>
         <li class="breadcrumb-item">
-          <router-Link :to="{ name: 'ActiveIndex' }" class="text-decoration-none"
-            >精選活動 </router-Link>
+          <router-Link
+            :to="{ name: 'ActiveIndex' }"
+            class="text-decoration-none"
+            >精選活動
+          </router-Link>
         </li>
       </ol>
     </nav>
@@ -151,9 +162,7 @@ onMounted(() => {
       </div>
 
       <div class="form-btn col-lg-2 mb-3">
-        <button class="search-btn clear-btn" @click="clear">
-          清除
-        </button>
+        <button class="search-btn clear-btn" @click="clear">清除</button>
         <button class="search-btn" @click="selectSearch">
           <span class="search-img">
             <img src="../../assets/icon/Union.png" alt="" />
@@ -185,6 +194,14 @@ onMounted(() => {
         <span class="search-all"
           >共有 <span class="search-count">{{ citiesCount }} </span> 筆</span
         >
+      </div>
+      <div class="all-data d-flex mt-2 w-100">        
+        <input
+          type="checkbox"
+          v-model="showAllData"
+          @click="test"
+        />
+        <label>顯示已過期活動</label>
       </div>
       <!-- 查無資料 -->
       <div class="row" v-if="citiesCount == 0">

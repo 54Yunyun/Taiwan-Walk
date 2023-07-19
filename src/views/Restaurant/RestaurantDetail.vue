@@ -25,10 +25,8 @@ const goBackCity = ref();
 const fetchOne = async () => {
   const data = await api.fetchOne(mode, id);
   restaurantData.value = data;
-  console.log(restaurantData.value);
   const matchedCity = cities.find((city) => city.name === data[0].City);
   goBackCity.value = matchedCity ? matchedCity.value : '';
-  console.log(goBackCity);
   positionLat.value = data[0].Position.PositionLat;
   positionLon.value = data[0].Position.PositionLon;
   mapSrc.value = `https://maps.google.com.tw/maps?f=q&hl=zh-TW&geocode=&q=${positionLat.value},${positionLon.value}
@@ -92,7 +90,7 @@ const fetchNearbyScenicSpot= async () => {
   nearbyScenicSpot.value = data;
 };
 
-const goMode = async (mode,id) => {
+const goModeDetail =  (mode,id) => {
   const url = `/${mode}Detail/${id}`;
   router.push(url);
 };
@@ -261,7 +259,7 @@ onMounted(async () => {
           class="card col-lg-3 col-md-6"
           v-for="data in nearbyRestaurant"
           :key="data"
-          @click="goMode('restaurant',data.RestaurantID)"
+          @click="goModeDetail('restaurant',data.RestaurantID)"
         >
           <div class="overflow-hidden places-card shadow">
             <div
@@ -305,7 +303,7 @@ onMounted(async () => {
           class="card col-lg-3 col-md-6"
           v-for="data in nearbyActivity"
           :key="data"
-          @click="goMode('active',data.ActivityID)"
+          @click="goModeDetail('active',data.ActivityID)"
         >
           <div class="overflow-hidden places-card shadow">
             <div
@@ -349,7 +347,7 @@ onMounted(async () => {
           class="card col-lg-3 col-md-6"
           v-for="data in nearbyScenicSpot"
           :key="data"
-          @click="goMode('scenicSpot',data.ScenicSpotID)"
+          @click="goModeDetail('scenicSpot',data.ScenicSpotID)"
         >
           <div class="overflow-hidden places-card shadow">
             <div
