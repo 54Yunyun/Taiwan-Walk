@@ -5,7 +5,7 @@
 - 介接 TDX 運輸資料 API。
 - 首頁有快速搜尋功能，在未選擇主題及兩者都未選擇時無法使用功能。
 - 精選活動、探索景點、品嚐美食頁面皆有城市搜尋及主題搜尋之功能。精選活動只顯示未過期的活動，多了顯示已過期活動之功能。
-作品連結：https://taiwan-walk.vercel.app/
+- 作品連結：https://taiwan-walk.vercel.app/
 # 系統說明
 
 ### Project setup
