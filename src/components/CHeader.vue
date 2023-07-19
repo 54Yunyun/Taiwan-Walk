@@ -25,19 +25,37 @@ watchEffect(() => {
           <span></span>
           <span></span>
           <span></span>
-          <ul id="menu">          
+          <ul id="menu">
             <router-link :to="{ name: 'ActiveIndex' }"
-              ><li :class="{ current: currentPage === 'ActiveIndex' || currentPage === 'ActiveDetail'}">
+              ><li
+                :class="{
+                  current:
+                    currentPage === 'ActiveIndex' ||
+                    currentPage === 'ActiveDetail',
+                }"
+              >
                 精選活動
               </li></router-link
             >
             <router-link :to="{ name: 'ScenicSpotIndex' }"
-              ><li :class="{ current: currentPage === 'ScenicSpotIndex' || currentPage === 'ScenicSpotDetail'}">
+              ><li
+                :class="{
+                  current:
+                    currentPage === 'ScenicSpotIndex' ||
+                    currentPage === 'ScenicSpotDetail',
+                }"
+              >
                 探索景點
               </li></router-link
             >
             <router-link :to="{ name: 'RestaurantIndex' }"
-              ><li :class="{ current: currentPage === 'RestaurantIndex' }">
+              ><li
+                :class="{
+                  current:
+                    currentPage === 'RestaurantIndex' ||
+                    currentPage === 'RestaurantDetail',
+                }"
+              >
                 品嚐美食
               </li></router-link
             >
@@ -61,6 +79,7 @@ watchEffect(() => {
   align-items: center;
   margin-left: 5%;
 }
+
 .header-title a {
   color: #6e7d60;
 }
@@ -83,21 +102,21 @@ watchEffect(() => {
   left: -5px;
   cursor: pointer;
   opacity: 0;
-  z-index: 2;
+  z-index: 100;
 }
 .main-nav {
   width: 100%;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  margin-right: 5%;
+  margin-right: 10%;
+  z-index: 999;
 }
-
 nav #menu li.current {
   color: #6e7d60;
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
-  border-bottom: 2px solid #e0da48;
 }
+
 @media screen and (min-width: 768px) {
   #menu {
     display: flex;
@@ -105,11 +124,14 @@ nav #menu li.current {
   }
   #menu li {
     border-bottom: 2px solid transparent;
-    transition: border-bottom .3s ease-in-out;
+    transition: border-bottom 0.3s ease-in-out;
   }
   #menu li:hover {
     color: #6e7d60;
     text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
+    border-bottom: 2px solid #e0da48;
+  }
+  nav #menu li.current {
     border-bottom: 2px solid #e0da48;
   }
 }
@@ -122,14 +144,14 @@ nav #menu li.current {
       transform: translate(100%, -100%) scale(1);
     }
   }
-  .main-nav{
+  .main-nav {
     width: 0;
   }
   .header-title {
     width: 100%;
     justify-content: center;
   }
-  .mobile-none{
+  .mobile-none {
     display: none;
   }
 
@@ -142,7 +164,7 @@ nav #menu li.current {
   #menuToggle a {
     text-decoration: none;
     color: #232323;
-    transition: color .3s ease;
+    transition: color 0.3s ease;
   }
 
   #menuToggle a:hover {
@@ -159,7 +181,7 @@ nav #menu li.current {
     border-radius: 3px;
     z-index: 1;
     transform-origin: 4px 0px;
-    transition: transform .5s cubic-bezier(0.77, 0.2, 0.05, 1);
+    transition: transform 0.5s cubic-bezier(0.77, 0.2, 0.05, 1);
   }
 
   #menuToggle span:first-child {
@@ -192,13 +214,13 @@ nav #menu li.current {
     margin: -100px 0 0 -150px;
     padding: 50px;
     padding-top: 125px;
-    background: #ccc;
+    background: #ffffff;
     list-style-type: none;
     border-radius: 0 10% 0;
     transform-origin: top right;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
     transform: translate(100%, 0%);
-    transition: transform .5s cubic-bezier(0.77, 0.2, 0.05, 1);
+    transition: transform 0.5s cubic-bezier(0.77, 0.2, 0.05, 1);
   }
 
   #menu li {

@@ -60,15 +60,15 @@ const goModeIndex = (mode,city) => {
     url += `${mode}`;
   }
   if (mode && city) {
-    url += `${mode}/${city}`;
+    url += `/${city}`;
   }
   router.push(url);
 };
 
 onMounted(async() => {
-   fetchActivityList();
-   fetchScenicSpotList();
-   fetchRestaurantList();
+  //  fetchActivityList();
+  //  fetchScenicSpotList();
+  //  fetchRestaurantList();
 });
 </script>
 <template>
@@ -103,7 +103,7 @@ onMounted(async() => {
         </select>
        
         <div class="form-btn">
-          <button :class="['search-btn', { 'disabled': isSearchDisabled }]" :disabled="isSearchDisabled"  @click="goModeIndex(selectedActive,selectedCity)">
+          <button class="search-btn"  @click="goModeIndex(selectedActive,selectedCity)">
             <span class="search-img">
               <img src="../assets/icon/Union.png" alt="" />
             </span>

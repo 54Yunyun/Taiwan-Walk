@@ -27,8 +27,8 @@ let data = {};
 let allData = {};
 
 const routeParams = {
-  city: selectedCity.value,
-  class: selectedActive.value,
+  city: String,
+  class: String,
 };
 const onClickHandler = (page) => {
   currentPage.value = page;
@@ -81,6 +81,7 @@ const selectSearch = async () => {
   chineseCityName.value = matchedCity ? matchedCity.name : '';
   routeParams.city = selectedCity.value;
   routeParams.class = selectedActive.value;
+  console.log(routeParams);
   router.replace({ name: 'ActiveIndex', params: routeParams });
 };
 
@@ -110,7 +111,7 @@ const clear = () => {
 onMounted(() => {
   const city = route.params.city || '';
   const className = route.params.class || '';
-  // selectSearch();
+  selectSearch();
 });
 </script>
 <template>

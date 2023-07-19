@@ -102,7 +102,7 @@ onMounted(() => {
             >首頁</router-Link
           >
         </li>
-        <li class="breadcrumb-item">探索景點</li>
+        <li class="breadcrumb-item">品嚐美食</li>
       </ol>
     </nav>
     <!-- 搜尋 -->
