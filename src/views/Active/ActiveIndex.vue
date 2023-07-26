@@ -81,7 +81,6 @@ const selectSearch = async () => {
   chineseCityName.value = matchedCity ? matchedCity.name : '';
   routeParams.city = selectedCity.value;
   routeParams.class = selectedActive.value;
-  console.log(routeParams);
   router.replace({ name: 'ActiveIndex', params: routeParams });
 };
 
@@ -162,14 +161,14 @@ onMounted(() => {
         </select>
       </div>
 
-      <div class="form-btn col-lg-2 mb-3">
-        <button class="search-btn clear-btn" @click="clear">清除</button>
+      <div class="form-btn col-lg-2 mb-3">      
         <button class="search-btn" @click="selectSearch">
           <span class="search-img">
             <img src="../../assets/icon/Union.png" alt="" />
           </span>
           搜尋
         </button>
+        <button class="search-btn clear-btn" @click="clear">清除</button>
       </div>
     </div>
     <!-- 預設內容 -->

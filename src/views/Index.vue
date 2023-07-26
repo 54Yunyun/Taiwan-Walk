@@ -66,9 +66,9 @@ const goModeIndex = (mode,city) => {
 };
 
 onMounted(async() => {
-  //  fetchActivityList();
-  //  fetchScenicSpotList();
-  //  fetchRestaurantList();
+   fetchActivityList();
+   fetchScenicSpotList();
+   fetchRestaurantList();
 });
 </script>
 <template>

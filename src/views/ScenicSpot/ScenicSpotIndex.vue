@@ -23,6 +23,7 @@ let citiesCount = ref(0);
 let search = ref(false);
 let data = {};
 
+
 const routeParams = {
   city: selectedCity.value,
   class: selectedActive.value,
@@ -86,6 +87,16 @@ const clear = () =>{
   selectedCity.value = '';
   selectedActive.value = '';
 }
+const goActiveClass = async (ClassName) => {
+  data = await api.fetchCityClassList(mode, '', `${ClassName}`);
+  search.value = true;
+  activeClass.value = ClassName;
+  citiesList.value = data;
+  citiesCount.value = citiesList.value.length;
+  routeParams.city = '';
+  routeParams.class = ClassName;
+  router.replace({ name: 'ScenicSpotIndex', params: routeParams });
+};
 onMounted(() => {
   const city = route.params.city || '';
   const className = route.params.class || '';
@@ -134,15 +145,15 @@ onMounted(() => {
         </select>
       </div>
 
-      <div class="form-btn col-lg-2 mb-3">
-        <button class="search-btn clear-btn" @click="clear">
-          清除
-        </button>
+      <div class="form-btn col-lg-2 mb-3">       
         <button class="search-btn" @click="selectSearch">
           <span class="search-img">
             <img src="../../assets/icon/Union.png" alt="" />
           </span>
           搜尋
+        </button>
+        <button class="search-btn clear-btn" @click="clear">
+          清除
         </button>
       </div>
     </div>
@@ -152,13 +163,13 @@ onMounted(() => {
       <div class="card-wrap row">
         <div
           class="card g-3 col-lg-3 col-md-6"
-          v-for="active in scenicSpotClass"
-          :key="active.name"
+          v-for="scenicSpotClass in scenicSpotClass"
+          :key="scenicSpotClass.name"
         >
           <div class="card-img">
-            <img :src="active.imgUrl" :alt="active.name" />
+            <img :src="scenicSpotClass.imgUrl" :alt="scenicSpotClass.name" @click="goActiveClass(scenicSpotClass.name)"/>
           </div>
-          <span class="active-title">{{ active.name }}</span>
+          <span class="active-title">{{ scenicSpotClass.name }}</span>
         </div>
       </div>
     </div>

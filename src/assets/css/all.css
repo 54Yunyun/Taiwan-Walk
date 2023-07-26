@@ -86,7 +86,7 @@ input{
 }
 /* 清除按鈕 */
 .clear-btn{
-  margin-right: 10px;
+  margin-left: 10px;
   background-color: #ccc;
 }
 
