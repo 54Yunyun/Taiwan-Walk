@@ -117,11 +117,12 @@ ul li {
 }
 
 /* 麵包屑 */
-.breadcrumb-item a {
+.breadcrumb a {
   color: #646464;
   transition: color 0.3s, text-shadow 0.3s;
+  cursor: pointer;
 }
-.breadcrumb-item a:hover {
+.breadcrumb a:hover {
   color: #6e7d60;
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
 }

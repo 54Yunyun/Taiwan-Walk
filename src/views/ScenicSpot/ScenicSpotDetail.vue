@@ -19,13 +19,15 @@ const nearbyActivity = ref([]);
 const nearbyScenicSpot = ref([]);
 const nearbyRestaurant = ref([]);
 const goBackCity = ref();
+let breadcrumbCity = ref();
 let positionLat = ref('');
 let positionLon = ref('');
 // 取得相關縣市資料
 const fetchOne = async () => {
   const data = await api.fetchOne(mode, id);
   scenicSpotData.value = data;
-  const matchedCity = cities.find((city) => city.name === data[0].City);
+  const matchedCity = cities.find((city) => city.name === data[0].Address.substring(0, 3));
+  breadcrumbCity.value = matchedCity ? matchedCity.name : '';
   goBackCity.value = matchedCity ? matchedCity.value : '';
   positionLat.value = data[0].Position.PositionLat;
   positionLon.value = data[0].Position.PositionLon;
@@ -126,7 +128,7 @@ onMounted(async () => {
             :to="{ name: 'ScenicSpotIndex', params: { city: goBackCity } }"
             class="text-decoration-none"
           >
-            {{ scenicSpot.City }}</router-Link
+            {{ breadcrumbCity }}</router-Link
           >
         </li>
         <li class="breadcrumb-item">

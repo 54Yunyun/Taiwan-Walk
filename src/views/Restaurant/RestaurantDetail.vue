@@ -114,14 +114,14 @@ onMounted(async () => {
         </li>
         <li class="breadcrumb-item">
           <router-Link
-            :to="{ name: 'ScenicSpotIndex' }"
+            :to="{ name: 'RestaurantIndex' }"
             class="text-decoration-none"
             >品嚐美食</router-Link
           >
         </li>
         <li class="breadcrumb-item">
           <router-Link
-            :to="{ name: 'ScenicSpotIndex', params: { city: goBackCity } }"
+            :to="{ name: 'RestaurantIndex', params: { city: goBackCity } }"
             class="text-decoration-none"
           >
           {{ restaurant.City }}</router-Link>
@@ -129,7 +129,7 @@ onMounted(async () => {
         <li class="breadcrumb-item">
           <router-Link
             :to="{
-              name: 'ScenicSpotIndex',
+              name: 'RestaurantIndex',
               params: {
                 city: goBackCity,
                 class: restaurant.Class,

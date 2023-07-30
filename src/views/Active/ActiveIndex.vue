@@ -23,8 +23,8 @@ let selectedId = ref();
 let citiesCount = ref(0);
 let search = ref(false);
 let showAllData = ref(false);
-let data = {};
-let allData = {};
+let data = ref([]);
+let allData = ref([]);
 
 const routeParams = {
   city: String,
@@ -56,31 +56,41 @@ const selectSearch = async () => {
   // 如果兩者都選了，則進行縣市加活動的搜尋
   if (isCitySelected && isActivitySelected) {
     activeClass.value = selectedActive.value;
-    data = await api.fetchCityClassList(
+    data.value = await api.fetchCityClassList(
       mode,
       `${selectedCity.value}`,
       `${selectedActive.value}`
     );
   } else if (isCitySelected) {
     // 如果只選了縣市，則進行縣市搜尋
-    data = await api.fetchCityList(mode, `${selectedCity.value}`, '');
+    data.value = await api.fetchCityList(mode, `${selectedCity.value}`, '');
   } else if (isActivitySelected) {
     activeClass.value = selectedActive.value;
     // 如果只選了活動，則進行活動搜尋
-    data = await api.fetchCityClassList(mode, '', `${selectedActive.value}`);
+    data.value = await api.fetchCityClassList(mode, '', `${selectedActive.value}`);
   }
   if (data.length >= 0) {
     search.value = true;
   }
 
   allData.value = data;
-  citiesList.value = data.filter((data) => data.StartTime >= today);
+  citiesList.value = data.value.filter((data) => data.StartTime >= today);
   citiesCount.value = citiesList.value.length;
 
   const matchedCity = cities.find((city) => city.value === selectedCity.value);
   chineseCityName.value = matchedCity ? matchedCity.name : '';
   routeParams.city = selectedCity.value;
   routeParams.class = selectedActive.value;
+  router.replace({ name: 'ActiveIndex', params: routeParams });
+};
+
+const reloadData = () => {
+  selectedCity.value = '';
+  selectedActive.value = '';
+  search.value = false;
+  showAllData.value = false;
+  routeParams.city = '';
+  routeParams.class = '';
   router.replace({ name: 'ActiveIndex', params: routeParams });
 };
 
@@ -124,11 +134,7 @@ onMounted(() => {
           >
         </li>
         <li class="breadcrumb-item">
-          <router-Link
-            :to="{ name: 'ActiveIndex' }"
-            class="text-decoration-none"
-            >精選活動
-          </router-Link>
+          <a @click="reloadData" class="text-decoration-none">精選活動 </a>
         </li>
       </ol>
     </nav>
@@ -161,7 +167,7 @@ onMounted(() => {
         </select>
       </div>
 
-      <div class="form-btn col-lg-2 mb-3">      
+      <div class="form-btn col-lg-3 mb-3">
         <button class="search-btn" @click="selectSearch">
           <span class="search-img">
             <img src="../../assets/icon/Union.png" alt="" />
@@ -195,12 +201,8 @@ onMounted(() => {
           >共有 <span class="search-count">{{ citiesCount }} </span> 筆</span
         >
       </div>
-      <div class="all-data d-flex mt-2 w-100">        
-        <input
-          type="checkbox"
-          v-model="showAllData"
-          @click="test"
-        />
+      <div class="all-data d-flex mt-2 w-100">
+        <input type="checkbox" v-model="showAllData" @click="test" />
         <label>顯示已過期活動</label>
       </div>
       <!-- 查無資料 -->

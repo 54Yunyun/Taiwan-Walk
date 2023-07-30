@@ -30,6 +30,11 @@ const activesClass = [
     imgUrl: 'https://i.pinimg.com/564x/17/60/a2/1760a2a863c457afcd4d6d196c4ecac1.jpg',
     value: '四季活動',
   },
+  {
+    name: '藝文活動',
+    imgUrl: 'https://i.pinimg.com/564x/4f/2e/d5/4f2ed578e508e1b7fea48daa85728bb5.jpg',
+    value: '藝文活動',
+  },
 ];
 
 export { activesClass };

@@ -28,9 +28,6 @@ const routeParams = {
   class: selectedActive.value,
 };
 
-const onClickHandler = function (page) {
-  currentPage.value = page;
-};
 
 const visibleCities = computed(() => {
   // 如果當前頁碼是 1，起始index start 則是 0，從 citiesList  index[0] 取出 12 筆資料
@@ -81,11 +78,31 @@ const selectSearch = async () => {
   routeParams.class = selectedActive.value;
   router.replace({ name: 'RestaurantIndex', params: routeParams });
 };
-
+const reloadData = () => {
+  selectedCity.value = '';
+  selectedActive.value = '';
+  search.value = false;
+  routeParams.city = '';
+  routeParams.class = '';
+  router.replace({ name: 'RestaurantIndex', params: routeParams });
+};
 const clear = () =>{
   selectedCity.value = '';
   selectedActive.value = '';
 }
+const goActiveClass = async (ClassName) => {
+  data = await api.fetchCityClassList(mode, '', `${ClassName}`);
+  search.value = true;
+  activeClass.value = ClassName;
+  citiesList.value = data;
+  citiesCount.value = citiesList.value.length;
+  routeParams.city = '';
+  routeParams.class = ClassName;
+  router.replace({ name: 'RestaurantIndex', params: routeParams });
+};
+const onClickHandler = function (page) {
+  currentPage.value = page;
+};
 onMounted(() => {
   const city = route.params.city || '';
   const className = route.params.class || '';
@@ -102,7 +119,9 @@ onMounted(() => {
             >首頁</router-Link
           >
         </li>
-        <li class="breadcrumb-item">品嚐美食</li>
+        <li class="breadcrumb-item">
+          <a class="breadcrumb-item" @click="reloadData">品嚐美食</a>
+        </li>
       </ol>
     </nav>
     <!-- 搜尋 -->
@@ -133,7 +152,7 @@ onMounted(() => {
           </option>
         </select>
       </div>
-      <div class="form-btn col-lg-2 mb-3">      
+      <div class="form-btn col-lg-3 mb-3">      
         <button class="search-btn" @click="selectSearch">
           <span class="search-img">
             <img src="../../assets/icon/Union.png" alt="" />
@@ -155,7 +174,7 @@ onMounted(() => {
           :key="active.name"
         >
           <div class="card-img">
-            <img :src="active.imgUrl" :alt="active.name" />
+            <img :src="active.imgUrl" :alt="active.name" @click="goActiveClass(active.name)"/>
           </div>
           <span class="active-title">{{ active.name }}</span>
         </div>

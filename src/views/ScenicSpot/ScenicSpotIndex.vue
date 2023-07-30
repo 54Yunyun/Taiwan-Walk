@@ -83,6 +83,16 @@ const selectSearch = async () => {
   routeParams.class = selectedActive.value;
   router.replace({ name: 'ScenicSpotIndex', params: routeParams });
 };
+
+const reloadData = () => {
+  selectedCity.value = '';
+  selectedActive.value = '';
+  search.value = false;
+  routeParams.city = '';
+  routeParams.class = '';
+  router.replace({ name: 'ScenicSpotIndex', params: routeParams });
+};
+
 const clear = () =>{
   selectedCity.value = '';
   selectedActive.value = '';
@@ -113,7 +123,9 @@ onMounted(() => {
             >首頁</router-Link
           >
         </li>
-        <li class="breadcrumb-item">探索景點</li>
+        <li class="breadcrumb-item">
+          <a @click="reloadData" class="breadcrumb-item">探索景點</a>
+        </li>
       </ol>
     </nav>
     <!-- 搜尋 -->
@@ -145,7 +157,7 @@ onMounted(() => {
         </select>
       </div>
 
-      <div class="form-btn col-lg-2 mb-3">       
+      <div class="form-btn col-lg-3 mb-3">       
         <button class="search-btn" @click="selectSearch">
           <span class="search-img">
             <img src="../../assets/icon/Union.png" alt="" />
