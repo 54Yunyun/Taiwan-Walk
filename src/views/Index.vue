@@ -67,7 +67,7 @@ const goModeIndex = (mode,city) => {
 
 
 function onInfo (content) {
-  message.value.info(content) // info调用
+  message.value.info(content)
 }
 
 onMounted(async () => {
