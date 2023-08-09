@@ -12,7 +12,8 @@ const imgData = ref([]);
 const selectedActive = ref("");
 const selectedCity = ref("");
 const router = useRouter();
-
+const message = ref()
+const content = '主題不得為空'
 // 格式化日期
 const today = new Date();
 const formatDate = (date) => dayjs(date).format('YYYY/MM/DD');
@@ -49,12 +50,11 @@ const goModeDetail = (mode, id) => {
 };
 
 
-
 // 搜尋 探索景點、節慶活動、品嚐美食
 const goModeIndex = (mode,city) => {
   let url = '/';
   if(!mode && !city || !mode && city){
-    alert('主題不得為空，請重新選擇');
+    onInfo(content); 
   }
   if(mode){
     url += `${mode}`;
@@ -65,15 +65,20 @@ const goModeIndex = (mode,city) => {
   router.push(url);
 };
 
-onMounted(async() => {
-   fetchActivityList();
-   fetchScenicSpotList();
-   fetchRestaurantList();
+
+function onInfo (content) {
+  message.value.info(content) // info调用
+}
+
+onMounted(() => {
+  //  await fetchActivityList();
+  //  await fetchScenicSpotList();
+  //  await fetchRestaurantList();
 });
 </script>
 <template>
   <!-- 搜尋景點 -->
-  <div class="container">
+  <div class="container">   
     <div class="search-wrap row">
       <div class="search-title col-lg">
         探索<span class="title-underline">台灣之美</span>
@@ -97,13 +102,15 @@ onMounted(async() => {
           </select>
         <select class="form-select" aria-label="Default select example" v-model="selectedActive">
           <option value="" selected disabled hidden>請選擇主題</option>
-          <option value="scenicSpotIndex">精選活動</option>
-          <option value="activeIndex">探索景點</option>
+          <option value="activeIndex">精選活動</option>
+          <option value="scenicSpotIndex">探索景點</option>
           <option value="restaurantIndex">品嚐美食</option>
         </select>
        
         <div class="form-btn">
-          <button class="search-btn"  @click="goModeIndex(selectedActive,selectedCity)">
+          <button type="button"           
+          class="search-btn"  
+          @click="goModeIndex(selectedActive,selectedCity)">
             <span class="search-img">
               <img src="../assets/icon/Union.png" alt="" />
             </span>
@@ -267,6 +274,9 @@ onMounted(async() => {
       </div>
     </div>
   </div>
+ <div>
+  <Message class="message" ref="message" :duration="3000" :top="50" />
+ </div>
 </template>
 
 <style scoped>
@@ -314,9 +324,6 @@ onMounted(async() => {
   width: 100%;
   margin-bottom: 5%;
 }
-
-
-
 
 .keyword {
   font-size: 14px;

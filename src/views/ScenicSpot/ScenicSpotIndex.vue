@@ -146,7 +146,7 @@ onMounted(() => {
       </div>
       <div class="col-lg-3 mb-3">
         <select class="form-select" v-model="selectedActive">
-          <option value="" selected disabled hidden>請選擇分類</option>
+          <option value="" selected disabled hidden>請選擇主題</option>
           <option
             v-for="placeClass in scenicSpotClass"
             :value="placeClass.name"
@@ -171,7 +171,7 @@ onMounted(() => {
     </div>
     <!-- 預設內容 -->
     <div v-if="!search">
-      <div class="index-title">熱門分類</div>
+      <div class="index-title">熱門主題</div>
       <div class="card-wrap row">
         <div
           class="card g-3 col-lg-3 col-md-6"
