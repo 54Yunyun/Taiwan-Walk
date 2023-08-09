@@ -31,6 +31,7 @@ const routeParams = {
 
 const onClickHandler = function (page) {
   currentPage.value = page;
+  console.log(currentPage.value);
 };
 
 const visibleCities = computed(() => {

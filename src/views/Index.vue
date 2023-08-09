@@ -12,8 +12,6 @@ const imgData = ref([]);
 const selectedActive = ref("");
 const selectedCity = ref("");
 const router = useRouter();
-const message = ref()
-const content = '主題不得為空'
 // 格式化日期
 const today = new Date();
 const formatDate = (date) => dayjs(date).format('YYYY/MM/DD');
@@ -54,7 +52,7 @@ const goModeDetail = (mode, id) => {
 const goModeIndex = (mode,city) => {
   let url = '/';
   if(!mode && !city || !mode && city){
-    onInfo(content); 
+   alert('主題不得為空')
   }
   if(mode){
     url += `${mode}`;
@@ -64,11 +62,6 @@ const goModeIndex = (mode,city) => {
   }
   router.push(url);
 };
-
-
-function onInfo (content) {
-  message.value.info(content)
-}
 
 onMounted(async () => {
    await fetchActivityList();
@@ -274,9 +267,6 @@ onMounted(async () => {
       </div>
     </div>
   </div>
- <div>
-  <Message class="message" ref="message" :duration="3000" :top="50" />
- </div>
 </template>
 
 <style scoped>

@@ -32,9 +32,11 @@ const routeParams = {
 };
 const onClickHandler = (page) => {
   currentPage.value = page;
+
 };
 
 const visibleCities = computed(() => {
+
   // 如果當前頁碼是 1，起始index start 則是 0，從 citiesList  index[0] 取出 12 筆資料
   const start = (currentPage.value - 1) * 12;
   // 因index 起始是 0 ，所以 end 為 start + 12;

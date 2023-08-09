@@ -13,8 +13,6 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import VueAwesomePaginate from 'vue-awesome-paginate';
 import 'vue-awesome-paginate/dist/style.css';
 import { LoadingPlugin } from 'vue-loading-overlay';
-import VueAmazingUI from 'vue-amazing-ui'
-import 'vue-amazing-ui/css'
 
 const pinia = createPinia();
 const app = createApp(App);
@@ -24,5 +22,4 @@ app
   .use(VueAxios, axios)
   .use(VueAwesomePaginate)
   .use(LoadingPlugin)
-  .use(VueAmazingUI);
 app.mount('#app');
