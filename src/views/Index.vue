@@ -70,10 +70,10 @@ function onInfo (content) {
   message.value.info(content) // info调用
 }
 
-onMounted(() => {
-  //  await fetchActivityList();
-  //  await fetchScenicSpotList();
-  //  await fetchRestaurantList();
+onMounted(async () => {
+   await fetchActivityList();
+   await fetchScenicSpotList();
+   await fetchRestaurantList();
 });
 </script>
 <template>
@@ -90,7 +90,7 @@ onMounted(() => {
         </div>
       </div>
       <div class="search-select col-lg">
-        <select class="form-select" v-model="selectedCity">
+        <select class="form-select" v-model="selectedCity" >
             <option value="" selected disabled hidden>請選擇縣市</option>
             <option
               v-for="city in cities"

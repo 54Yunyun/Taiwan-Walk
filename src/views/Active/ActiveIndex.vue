@@ -275,5 +275,4 @@ onMounted(() => {
       </div>
     </div>
   </div>
-  <!-- <CLoading v-if="loading"></CLoading> -->
 </template>

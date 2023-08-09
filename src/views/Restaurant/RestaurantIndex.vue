@@ -103,10 +103,10 @@ const goActiveClass = async (ClassName) => {
 const onClickHandler = function (page) {
   currentPage.value = page;
 };
-onMounted(() => {
+onMounted(async () => {
   const city = route.params.city || '';
   const className = route.params.class || '';
-  selectSearch();
+  await selectSearch();
 });
 </script>
 <template>

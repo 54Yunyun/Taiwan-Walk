@@ -194,7 +194,7 @@ onMounted(() => {
         >
       </div>
       <!-- 查無資料 -->
-      <div class="row" v-if="citiesCount == 0">
+      <div class="row" v-if="citiesCount === 0">
         <div class="no-data-wrap pt-5 col-lg-3 col-md-6">
           <div class="no-data-container">
             <div class="no-data-img">
