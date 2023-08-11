@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { api } from '../../api/api.js';
 import { cities } from '../../constants/cities.js';
@@ -11,7 +11,6 @@ const route = useRoute();
 const mode = 'ScenicSpot';
 // 格式化日期
 const formatDate = (date) => dayjs(date).format('YYYY/MM/DD');
-const loading = ref();
 const currentPage = ref(1);
 const citiesList = ref([]);
 const chineseCityName = ref();
@@ -21,8 +20,7 @@ const selectedActive = ref(route.params.active || '');
 let selectedId = ref();
 let citiesCount = ref(0);
 let search = ref(false);
-let data = {};
-
+let data = [];
 
 const routeParams = {
   city: selectedCity.value,
@@ -31,7 +29,6 @@ const routeParams = {
 
 const onClickHandler = function (page) {
   currentPage.value = page;
-  console.log(currentPage.value);
 };
 
 const visibleCities = computed(() => {
@@ -50,7 +47,6 @@ const handleCardClick = (ScenicSpotID) => {
   // 跳轉至對應 id 頁面
   router.push({ path: url });
 };
-
 
 const selectSearch = async () => {
   // 檢查是否有選擇縣市及活動
@@ -72,7 +68,7 @@ const selectSearch = async () => {
     // 如果只選了活動，則進行活動搜尋
     data = await api.fetchCityClassList(mode, '', `${selectedActive.value}`);
   }
-  if (data.length >= 0) {
+  if (data.length > 0) {
     search.value = true;
   }
 
@@ -94,10 +90,10 @@ const reloadData = () => {
   router.replace({ name: 'ScenicSpotIndex', params: routeParams });
 };
 
-const clear = () =>{
+const clear = () => {
   selectedCity.value = '';
   selectedActive.value = '';
-}
+};
 const goActiveClass = async (ClassName) => {
   data = await api.fetchCityClassList(mode, '', `${ClassName}`);
   search.value = true;
@@ -108,6 +104,14 @@ const goActiveClass = async (ClassName) => {
   routeParams.class = ClassName;
   router.replace({ name: 'ScenicSpotIndex', params: routeParams });
 };
+watch(route, () => {
+  if (route.params.city !== undefined) {
+    selectedCity.value = route.params.city;
+  }
+  if (route.params.active !== undefined) {
+    selectedActive.value = route.params.active;
+  }
+});
 onMounted(() => {
   const city = route.params.city || '';
   const className = route.params.class || '';
@@ -158,16 +162,14 @@ onMounted(() => {
         </select>
       </div>
 
-      <div class="form-btn col-lg-3 mb-3">       
+      <div class="form-btn col-lg-3 mb-3">
         <button class="search-btn" @click="selectSearch">
           <span class="search-img">
             <img src="../../assets/icon/Union.png" alt="" />
           </span>
           搜尋
         </button>
-        <button class="search-btn clear-btn" @click="clear">
-          清除
-        </button>
+        <button class="search-btn clear-btn" @click="clear">清除</button>
       </div>
     </div>
     <!-- 預設內容 -->
@@ -180,7 +182,11 @@ onMounted(() => {
           :key="scenicSpotClass.name"
         >
           <div class="card-img">
-            <img :src="scenicSpotClass.imgUrl" :alt="scenicSpotClass.name" @click="goActiveClass(scenicSpotClass.name)"/>
+            <img
+              :src="scenicSpotClass.imgUrl"
+              :alt="scenicSpotClass.name"
+              @click="goActiveClass(scenicSpotClass.name)"
+            />
           </div>
           <span class="active-title">{{ scenicSpotClass.name }}</span>
         </div>
@@ -218,9 +224,7 @@ onMounted(() => {
           <div class="overflow-hidden places-card shadow">
             <div class="card-img search-card-img">
               <img
-                :src="
-                  active.Picture.PictureUrl1
-                "
+                :src="active.Picture.PictureUrl1"
                 :alt="active.ActivityName"
               />
             </div>

@@ -12,7 +12,6 @@ const mode = 'Activity';
 // 格式化日期
 const today = new Date().toISOString();
 const formatDate = (date) => dayjs(date).format('YYYY/MM/DD');
-const loading = ref();
 const currentPage = ref(1);
 const citiesList = ref([]);
 const chineseCityName = ref();
@@ -23,7 +22,7 @@ let selectedId = ref();
 let citiesCount = ref(0);
 let search = ref(false);
 let showAllData = ref(false);
-let data = ref([]);
+let data = [];
 let allData = ref([]);
 
 const routeParams = {
@@ -32,11 +31,9 @@ const routeParams = {
 };
 const onClickHandler = (page) => {
   currentPage.value = page;
-
 };
 
 const visibleCities = computed(() => {
-
   // 如果當前頁碼是 1，起始index start 則是 0，從 citiesList  index[0] 取出 12 筆資料
   const start = (currentPage.value - 1) * 12;
   // 因index 起始是 0 ，所以 end 為 start + 12;
@@ -58,25 +55,25 @@ const selectSearch = async () => {
   // 如果兩者都選了，則進行縣市加活動的搜尋
   if (isCitySelected && isActivitySelected) {
     activeClass.value = selectedActive.value;
-    data.value = await api.fetchCityClassList(
+    data = await api.fetchCityClassList(
       mode,
       `${selectedCity.value}`,
       `${selectedActive.value}`
     );
   } else if (isCitySelected) {
     // 如果只選了縣市，則進行縣市搜尋
-    data.value = await api.fetchCityList(mode, `${selectedCity.value}`, '');
+    data = await api.fetchCityList(mode, `${selectedCity.value}`, '');
   } else if (isActivitySelected) {
     activeClass.value = selectedActive.value;
     // 如果只選了活動，則進行活動搜尋
-    data.value = await api.fetchCityClassList(mode, '', `${selectedActive.value}`);
+    data = await api.fetchCityClassList(mode, '', `${selectedActive.value}`);
   }
-  if (data.length >= 0) {
+  if (data.length > 0) {
     search.value = true;
   }
 
   allData.value = data;
-  citiesList.value = data.value.filter((data) => data.StartTime >= today);
+  citiesList.value = data.filter((data) => data.StartTime >= today);
   citiesCount.value = citiesList.value.length;
 
   const matchedCity = cities.find((city) => city.value === selectedCity.value);
@@ -119,6 +116,15 @@ const clear = () => {
   selectedCity.value = '';
   selectedActive.value = '';
 };
+watch(route, () => {
+  if (route.params.city !== undefined) {
+    selectedCity.value = route.params.city;
+  }
+  if (route.params.active !== undefined) {
+    selectedActive.value = route.params.active;
+  }
+});
+
 onMounted(() => {
   const city = route.params.city || '';
   const className = route.params.class || '';

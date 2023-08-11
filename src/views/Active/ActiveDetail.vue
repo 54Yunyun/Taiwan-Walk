@@ -20,6 +20,7 @@ const nearbyActivity = ref([]);
 const nearbyScenicSpot = ref([]);
 const nearbyRestaurant = ref([]);
 const goBackCity = ref();
+const goBackClass = ref();
 let positionLat = ref('');
 let positionLon = ref('');
 
@@ -29,6 +30,7 @@ const fetchOne = async () => {
   activeData.value = data;
   const matchedCity = cities.find((city) => city.name === data[0].City);
   goBackCity.value = matchedCity ? matchedCity.value : '';
+  goBackClass.value = data[0].Class1 ? data[0].Class1 : data[0].Class2
   positionLat.value = data[0].Position.PositionLat;
   positionLon.value = data[0].Position.PositionLon;
   mapSrc.value = `https://maps.google.com.tw/maps?f=q&hl=zh-TW&geocode=&q=${positionLat.value},${positionLon.value}&z=16&output=embed&t=`;
@@ -89,7 +91,18 @@ const fetchNearbyRestaurant = async () => {
   );
   nearbyRestaurant.value = data;
 };
+const goBack = () => {
+  const routeParams = {
+    city: goBackCity.value,
+    class: goBackClass.value
+  };
+console.log(routeParams); 
+  router.replace({
+    name: 'ActiveIndex',
+    params: routeParams
+  });
 
+}
 const goModeDetail =  (mode, id) => {
   const url = `/${mode}Detail/${id}`;
   router.push(url);
@@ -128,23 +141,10 @@ onMounted(async () => {
           >
         </li>
         <li class="breadcrumb-item">
-          <router-Link
-            :to="{
-              name: 'ActiveIndex',
-              params: {
-                city: goBackCity,
-                class: active.Class1
-                  ? active.Class1
-                  : active.Class2
-                  ? active.Class2
-                  : '',
-              },
-            }"
-            class="text-decoration-none"
-          >
+          <a @click="goBack" class="text-decoration-none">
             {{
               active.Class1 ? active.Class1 : active.Class2 ? active.Class2 : ''
-            }}</router-Link
+            }}</a
           >
         </li>
         <li class="breadcrumb-item">{{ active.ActivityName }}</li>

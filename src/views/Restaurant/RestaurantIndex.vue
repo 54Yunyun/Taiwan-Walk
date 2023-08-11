@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { api } from '../../api/api.js';
 import { cities } from '../../constants/cities.js';
@@ -21,7 +21,7 @@ const selectedActive = ref(route.params.active || '');
 let selectedId = ref();
 let citiesCount = ref(0);
 let search = ref(false);
-let data = {};
+let data = [];
 
 const routeParams = {
   city: selectedCity.value,
@@ -66,7 +66,8 @@ const selectSearch = async () => {
     // 如果只選了活動，則進行活動搜尋
     data = await api.fetchCityClassList(mode, '', `${selectedActive.value}`);
   }
-  if (data.length >= 0) {
+
+  if (data.length > 0) {
     search.value = true;
   }
 
@@ -103,6 +104,14 @@ const goActiveClass = async (ClassName) => {
 const onClickHandler = function (page) {
   currentPage.value = page;
 };
+watch(route, () => {
+  if (route.params.city !== undefined) {
+    selectedCity.value = route.params.city;
+  }
+  if (route.params.active !== undefined) {
+    selectedActive.value = route.params.active;
+  }
+});
 onMounted(async () => {
   const city = route.params.city || '';
   const className = route.params.class || '';
