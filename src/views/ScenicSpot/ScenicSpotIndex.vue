@@ -9,8 +9,6 @@ import dayjs from 'dayjs';
 const router = useRouter();
 const route = useRoute();
 const mode = 'ScenicSpot';
-// 格式化日期
-const formatDate = (date) => dayjs(date).format('YYYY/MM/DD');
 const currentPage = ref(1);
 const citiesList = ref([]);
 const chineseCityName = ref();

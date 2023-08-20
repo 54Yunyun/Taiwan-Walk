@@ -13,7 +13,7 @@ watchEffect(() => {
     <!-- logo -->
     <div class="header-title">
       <router-link :to="{ name: 'Index' }">
-        <img src="../assets/icon/Group-27.png" alt="logo" class="logo" />
+        <img src="../assets/icon/logo.png" alt="logo" class="logo" />
         台灣走走 <span class="mobile-none">．Tai Walk</span>
       </router-link>
     </div>

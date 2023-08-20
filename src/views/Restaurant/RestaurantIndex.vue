@@ -9,9 +9,6 @@ import dayjs from 'dayjs';
 const router = useRouter();
 const route = useRoute();
 const mode = 'Restaurant';
-// 格式化日期
-const formatDate = (date) => dayjs(date).format('YYYY/MM/DD');
-const loading = ref();
 const currentPage = ref(1);
 const citiesList = ref([]);
 const chineseCityName = ref();
@@ -104,14 +101,14 @@ const goActiveClass = async (ClassName) => {
 const onClickHandler = function (page) {
   currentPage.value = page;
 };
-watch(route, () => {
-  if (route.params.city !== undefined) {
-    selectedCity.value = route.params.city;
-  }
-  if (route.params.active !== undefined) {
-    selectedActive.value = route.params.active;
-  }
-});
+// watch(route, () => {
+//   if (route.params.city !== undefined) {
+//     selectedCity.value = route.params.city;
+//   }
+//   if (route.params.active !== undefined) {
+//     selectedActive.value = route.params.active;
+//   }
+// });
 onMounted(async () => {
   const city = route.params.city || '';
   const className = route.params.class || '';

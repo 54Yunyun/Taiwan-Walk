@@ -116,6 +116,7 @@ const clear = () => {
   selectedCity.value = '';
   selectedActive.value = '';
 };
+
 watch(route, () => {
   if (route.params.city !== undefined) {
     selectedCity.value = route.params.city;
